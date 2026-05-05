@@ -1,0 +1,40 @@
+services:
+  user-db:
+    image: postgres:16-alpine
+    container_name: energy-user-db
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${USER_DB_PORT:-5432}:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  user-service:
+    build:
+      context: ./user
+    image: energy-community-marketplace/user-service:local
+    container_name: energy-user-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      USER_DB_URL: jdbc:postgresql://user-db:5432/users_db
+      USER_DB_USERNAME: postgres
+      USER_DB_PASSWORD: postgres
+      APP_JWT_SECRET: local-development-user-service-jwt-secret
+      APP_JWT_ISSUER: user-service
+      APP_JWT_EXPIRATION_MINUTES: 60
+    ports:
+      - "${USER_SERVICE_PORT:-8080}:8080"
+
+volumes:
+  user-db-data:
