@@ -4,7 +4,7 @@ import com.energy.marketplace.user.domain.valueObject.Id;
 import com.energy.marketplace.user.domain.valueObject.UserRole;
 import com.energy.marketplace.user.domain.valueObject.UserStatus;
 
-public record UserValidationResult(
+public record ValidateUserResult(
         Id userId,
         boolean valid,
         UserRole role,
@@ -12,7 +12,7 @@ public record UserValidationResult(
         String message
 ) {
 
-    public UserValidationResult {
+    public ValidateUserResult {
         if (userId == null) {
             throw new IllegalArgumentException("User id cannot be null");
         }
@@ -30,12 +30,12 @@ public record UserValidationResult(
         }
     }
 
-    public static UserValidationResult valid(
+    public static ValidateUserResult valid(
             Id userId,
             UserRole role,
             UserStatus status
     ) {
-        return new UserValidationResult(
+        return new ValidateUserResult(
                 userId,
                 true,
                 role,
@@ -44,13 +44,13 @@ public record UserValidationResult(
         );
     }
 
-    public static UserValidationResult invalid(
+    public static ValidateUserResult invalid(
             Id userId,
             UserRole role,
             UserStatus status,
             String message
     ) {
-        return new UserValidationResult(
+        return new ValidateUserResult(
                 userId,
                 false,
                 role,

@@ -31,10 +31,10 @@ public class LoginUserService implements LoginUserUseCase {
         Email email = new Email(command.email());
 
         User user = loadUserPort.loadByEmail(email)
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or rawPassword"));
 
         if (!passwordHasherPort.matches(command.rawPassword(), user.getPassword())) {
-            throw new InvalidCredentialsException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or rawPassword");
         }
 
         String token = tokenIssuerPort.issueToken(user);

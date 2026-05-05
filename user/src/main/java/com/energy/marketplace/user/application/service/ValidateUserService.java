@@ -4,7 +4,7 @@ import com.energy.marketplace.user.application.command.ValidateUserCommand;
 import com.energy.marketplace.user.application.command.UserValidationPurpose;
 import com.energy.marketplace.user.application.port.in.ValidateUserUseCase;
 import com.energy.marketplace.user.application.port.out.LoadUserPort;
-import com.energy.marketplace.user.application.result.UserValidationResult;
+import com.energy.marketplace.user.application.result.ValidateUserResult;
 import com.energy.marketplace.user.domain.exception.UserNotFoundException;
 import com.energy.marketplace.user.domain.model.User;
 
@@ -17,7 +17,7 @@ public class ValidateUserService implements ValidateUserUseCase {
     }
 
     @Override
-    public UserValidationResult validateUser(ValidateUserCommand command) {
+    public ValidateUserResult validateUser(ValidateUserCommand command) {
         User user = loadUserPort.loadById(command.userId())
                 .orElseThrow(() -> new UserNotFoundException(command.userId()));
 
@@ -28,14 +28,14 @@ public class ValidateUserService implements ValidateUserUseCase {
         };
 
         if (valid) {
-            return UserValidationResult.valid(
+            return ValidateUserResult.valid(
                     user.getId(),
                     user.getRole(),
                     user.getStatus()
             );
         }
 
-        return UserValidationResult.invalid(
+        return ValidateUserResult.invalid(
                 user.getId(),
                 user.getRole(),
                 user.getStatus(),
