@@ -36,10 +36,10 @@ public class UserWebMapper {
         return new GetUserCommand(new Id(userId));
     }
 
-    public ValidateUserCommand toValidateUserCommand(ValidateUserRequest request) {
+    public ValidateUserCommand toValidateUserCommand(Long userId, String purpose) {
         return new ValidateUserCommand(
-                new Id(request.userId()),
-                parseValidationPurpose(request.purpose())
+                new Id(userId),
+                parseValidationPurpose(purpose)
         );
     }
 
