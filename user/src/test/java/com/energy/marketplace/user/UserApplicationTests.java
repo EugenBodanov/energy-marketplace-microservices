@@ -15,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -24,8 +26,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @Testcontainers
 @ExtendWith(UserApplicationTests.DockerRequiredCondition.class)
 class UserApplicationTests {
@@ -39,6 +45,9 @@ class UserApplicationTests {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @BeforeEach
     void cleanDatabase() {
@@ -84,6 +93,19 @@ class UserApplicationTests {
         assertThat(row)
                 .containsEntry("role", "PROSUMER")
                 .containsEntry("status", "ACTIVE");
+    }
+
+    @Test
+    void exposesOpenApiDocumentation() throws Exception {
+        mockMvc.perform(get("/v3/api-docs/user-service"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.info.title").value("User Service API"))
+                .andExpect(jsonPath("$.paths['/api/v1/users/register'].post.operationId").value("register"))
+                .andExpect(jsonPath("$.paths['/api/v1/users/register'].post.requestBody.required").value(true))
+                .andExpect(jsonPath("$.paths['/api/v1/users/{userId}/validate'].get.parameters[1].name").value("purpose"))
+                .andExpect(jsonPath("$.paths['/api/v1/users/{userId}/validate'].get.parameters[1].schema.default")
+                        .value("PARTICIPATE_IN_TRADE"))
+                .andExpect(jsonPath("$.components.schemas.RegisterUserRequest.properties.email.format").value("email"));
     }
 
     private Integer countRows(String sql) {

@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserResponse getUser(@PathVariable Long userId) {
+    public UserResponse getUser(@PathVariable("userId") Long userId) {
         var command = userWebMapper.toGetUserCommand(userId);
         var result = getUserUseCase.getUser(command);
 
@@ -47,8 +47,8 @@ public class UserController {
 
     @GetMapping("/{userId}/validate")
     public ValidateUserResponse validateUser(
-            @PathVariable Long userId,
-            @RequestParam(defaultValue = "PARTICIPATE_IN_TRADE") String purpose
+            @PathVariable("userId") Long userId,
+            @RequestParam(name = "purpose", defaultValue = "PARTICIPATE_IN_TRADE") String purpose
     ) {
         var command = userWebMapper.toValidateUserCommand(userId, purpose);
         var result = validateUserUseCase.validateUser(command);

@@ -21,3 +21,11 @@ app:
     secret: ${APP_JWT_SECRET:local-development-user-service-jwt-secret}
     issuer: ${APP_JWT_ISSUER:user-service}
     expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:60}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
