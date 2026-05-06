@@ -54,7 +54,7 @@ public class User {
     }
 
     public boolean canBuyEnergy() {
-        return isActive() && role == UserRole.CONSUMER;
+        return isActive() && (role == UserRole.CONSUMER || role == UserRole.PROSUMER);
     }
 
     public boolean canSellEnergy() {
