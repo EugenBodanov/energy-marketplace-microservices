@@ -13,6 +13,8 @@ The project uses a **monorepo**: all microservices, infrastructure files, shared
 
 ## Repository Structure
 
+Planned monorepo shape:
+
 ```text
 energy-marketplace/
 ├── README.md

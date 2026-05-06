@@ -6,7 +6,7 @@
 | ------------------ | --------------------------- | ---------------------------------------------------------------------------------------- |
 | Repository         | Monorepo                    | Easier development, review, Docker Compose setup, and documentation for a study project. |
 | Language           | Java 21                     | Stable enterprise language for service-oriented backend systems.                         |
-| Framework          | Spring Boot 3               | Strong support for REST, validation, persistence, messaging, and testing.                |
+| Framework          | Spring Boot 4               | Strong support for REST, validation, persistence, messaging, and testing.                |
 | Architecture style | Hexagonal architecture      | Keeps business logic separated from REST, database, and message broker adapters.         |
 | Database           | PostgreSQL                  | Reliable relational database for users, listings, trades, ledger entries, and receipts.  |
 | Persistence        | Spring Data JPA / Hibernate | Fast implementation of repository and entity layers.                                     |
@@ -36,7 +36,7 @@
 **Public routes:**
 
 ```http
-/api/users/**     -> user-service
+/api/v1/users/**  -> user-service
 /api/listings/**  -> listing-service
 /api/trades/**    -> trade-service
 ```
@@ -49,7 +49,9 @@
 
 **Service name:** `user-service`
 
-**Stack:** Spring Boot 3 + Spring Web + Spring Data JPA + PostgreSQL + JWT/simple token auth  
+**Implemented module:** `user/`
+
+**Stack:** Java 21 + Spring Boot 4.0.6 + Spring WebMVC + Spring Data JPA/Hibernate + PostgreSQL + Flyway + BCrypt + JWT issuing + OpenAPI/Swagger UI
 **Why:** User registration, login, validation, and persistence are simple REST + database tasks.
 
 **Responsibility:**
@@ -58,22 +60,63 @@
 - Authenticate users.
 - Store user profile and role.
 - Validate users before trade execution.
+- Hash passwords with BCrypt.
+- Issue HS256 JWT access tokens after login.
+- Apply database schema migrations through Flyway.
+- Expose OpenAPI JSON/YAML and Swagger UI for the user REST API.
+
+**Current domain rules:**
+
+- Users have a role: `ADMIN`, `CONSUMER`, or `PROSUMER`.
+- Users have a status: `ACTIVE`, `INACTIVE`, or `BLOCKED`.
+- Public registration accepts `CONSUMER` and `PROSUMER`; `ADMIN` registration is rejected by the web mapper.
+- `CONSUMER` and `PROSUMER` are roles, not permissions.
+- Active `CONSUMER` users can buy energy but cannot sell energy.
+- Active `PROSUMER` users can buy and sell energy.
+- Inactive or blocked users cannot participate in trade, buy energy, or sell energy.
 
 **Database:** `users_db`
+
+**Schema management:**
+
+- Migration location: `user/src/main/resources/db/migration`
+- Current migration: `V1__create_users_table.sql`
+- JPA is configured with `spring.jpa.hibernate.ddl-auto=validate`.
+- Spring Boot 4 Flyway auto-configuration requires `spring-boot-flyway`; PostgreSQL support is provided by `flyway-database-postgresql`.
 
 **Main endpoints:**
 
 ```http
-POST /users/register
-POST /users/login
-GET  /users/{id}
-GET  /users/{id}/validate
+POST /api/v1/users/register
+POST /api/v1/users/login
+GET  /api/v1/users/{userId}
+GET  /api/v1/users/{userId}/validate?purpose=PARTICIPATE_IN_TRADE
 ```
+
+`purpose` defaults to `PARTICIPATE_IN_TRADE` and supports `PARTICIPATE_IN_TRADE`, `BUY_ENERGY`, and `SELL_ENERGY`.
 
 **Communication:**
 
 - Called by API Gateway for user-facing operations.
 - Called synchronously by Trade Service for user validation.
+
+**Testing:**
+
+- Unit tests cover domain rules and application services.
+- `UserApplicationTests` uses Testcontainers PostgreSQL when Docker is available.
+- `UserApplicationTests` verifies the `user-service` OpenAPI group endpoint.
+- If Docker is unavailable, the integration test is skipped with a warning.
+
+**API documentation endpoints:**
+
+```http
+GET /swagger-ui.html
+GET /v3/api-docs
+GET /v3/api-docs/user-service
+GET /v3/api-docs.yaml
+```
+
+For detailed current implementation notes, see [`docs/user-service.md`](user-service.md).
 
 ---
 
@@ -297,7 +340,7 @@ receipt.generated.event
 | Internal service style | Hexagonal architecture                |
 | Repository structure   | Monorepo                              |
 | Gateway                | Spring Cloud Gateway                  |
-| Service framework      | Spring Boot 3                         |
+| Service framework      | Spring Boot 4                         |
 | Database model         | Database per service                  |
 | Sync communication     | REST                                  |
 | Async communication    | RabbitMQ                              |
