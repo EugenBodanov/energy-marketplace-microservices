@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: listing-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: jdbc:postgresql://localhost:5432/listings_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api/v1
+
+logging:
+  level:
+    root: INFO
+    com.energy.marketplace: DEBUG
+

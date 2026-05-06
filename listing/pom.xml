@@ -10,21 +10,23 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>user</artifactId>
-    <name>user</name>
-    <description>User Service - Energy Marketplace</description>
+    <artifactId>listing</artifactId>
+    <name>listing</name>
+    <description>Listing Service - Energy Marketplace</description>
 
     <dependencies>
         <!-- Common dependencies inherited from parent -->
 
-        <!-- User-specific dependencies -->
+        <!-- Listing-specific dependencies -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-jose</artifactId>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Lombok for annotation processing -->
