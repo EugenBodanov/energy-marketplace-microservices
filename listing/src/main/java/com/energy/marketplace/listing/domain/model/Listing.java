@@ -24,6 +24,30 @@ public class Listing {
     private Instant createdAt;
     private Instant updatedAt;
 
+    public Listing(
+            Long id,
+            Long sellerId,
+            String title,
+            String description,
+            ListingPrice price,
+            Capacity capacity,
+            ListingStatus status,
+            Long reservationReference,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        this.id = id;
+        this.sellerId = sellerId;
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.capacity = capacity;
+        this.status = status;
+        this.reservationReference = reservationReference;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
     // Setters for persistence mapping
     public void setId(Long id) { this.id = id; }
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }

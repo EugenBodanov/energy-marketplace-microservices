@@ -25,18 +25,18 @@ public class ListingPersistenceMapper {
     }
 
     public Listing toDomain(ListingJpaEntity entity) {
-        Listing listing = new Listing();
-        listing.setId(entity.getId());
-        listing.setSellerId(entity.getSellerId());
-        listing.setTitle(entity.getTitle());
-        listing.setDescription(entity.getDescription());
-        listing.setPrice(new ListingPrice(entity.getPriceAmount(), entity.getPriceCurrency()));
-        listing.setCapacity(new Capacity(entity.getCapacityValue(), entity.getCapacityUnit()));
-        listing.setStatus(entity.getStatus());
-        listing.setReservationReference(entity.getReservationReference());
-        listing.setCreatedAt(entity.getCreatedAt());
-        listing.setUpdatedAt(entity.getUpdatedAt());
-        return listing;
+        return new Listing(
+                entity.getId(),
+                entity.getSellerId(),
+                entity.getTitle(),
+                entity.getDescription(),
+                new ListingPrice(entity.getPriceAmount(), entity.getPriceCurrency()),
+                new Capacity(entity.getCapacityValue(), entity.getCapacityUnit()),
+                entity.getStatus(),
+                entity.getReservationReference(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
     }
 }
 

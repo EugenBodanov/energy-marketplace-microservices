@@ -32,7 +32,7 @@ public class ListingController {
 
     @PutMapping("/{listingId}")
     public ResponseEntity<ListingResponse> updateListing(
-            @PathVariable Long listingId,
+            @PathVariable("listingId") Long listingId,
             @Valid @RequestBody UpdateListingRequest request
     ) {
         var command = listingWebMapper.toUpdateCommand(listingId, request);
@@ -42,14 +42,14 @@ public class ListingController {
     }
 
     @DeleteMapping("/{listingId}")
-    public ResponseEntity<Void> deleteListing(@PathVariable Long listingId) {
+    public ResponseEntity<Void> deleteListing(@PathVariable("listingId") Long listingId) {
         var command = new DeleteListingCommand(listingId);
         deleteListingUseCase.delete(command);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{listingId}")
-    public ResponseEntity<ListingResponse> getListing(@PathVariable Long listingId) {
+    public ResponseEntity<ListingResponse> getListing(@PathVariable("listingId") Long listingId) {
         var result = getListingUseCase.getById(listingId);
         var response = listingWebMapper.toResponse(result);
         return ResponseEntity.ok(response);
@@ -57,10 +57,10 @@ public class ListingController {
 
     @GetMapping
     public ResponseEntity<SearchListingsResponse> searchListings(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Long sellerId,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer pageSize
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "sellerId", required = false) Long sellerId,
+            @RequestParam(name = "page", defaultValue = "1") Integer page,
+            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
     ) {
         var result = (status != null)
                 ? searchListingsUseCase.searchByStatus(status, page, pageSize)

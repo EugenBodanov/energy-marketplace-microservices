@@ -9,23 +9,29 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   datasource:
-    url: jdbc:postgresql://localhost:5432/listings_db
-    username: postgres
-    password: postgres
+    url: ${LISTING_DB_URL:jdbc:postgresql://localhost:5432/listing_db}
+    username: ${LISTING_DB_USERNAME:postgres}
+    password: ${LISTING_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 server:
-  port: 8082
-  servlet:
-    context-path: /api/v1
+  port: ${SERVER_PORT:8082}
 
 logging:
   level:
     root: INFO
     com.energy.marketplace: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
 

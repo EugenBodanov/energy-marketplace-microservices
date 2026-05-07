@@ -21,7 +21,7 @@
 
 **Service name:** `api-gateway`
 
-**Stack:** Spring Cloud Gateway + Spring Boot 3  
+**Stack:** Spring Cloud Gateway + Spring Boot 4  
 **Why:** Ready-made routing layer for Spring-based microservices; supports token forwarding, filters, and gateway-level validation.
 
 **Responsibility:**
@@ -124,7 +124,7 @@ For detailed current implementation notes, see [`docs/user-service.md`](user-ser
 
 **Service name:** `listing-service`
 
-**Stack:** Spring Boot 3 + Spring Web + Spring Data JPA + PostgreSQL + RabbitMQ  
+**Stack:** Spring Boot 4 + Spring Web + Spring Data JPA + PostgreSQL + RabbitMQ  
 **Why:** Needs REST for listing management and RabbitMQ for Saga commands such as reserve, release, and close listing.
 
 **Responsibility:**
@@ -170,7 +170,7 @@ ListingClosedEvent
 
 **Service name:** `trade-service`
 
-**Stack:** Spring Boot 3 + Spring Web + Spring Data JPA + PostgreSQL + RabbitMQ + WebClient/OpenFeign  
+**Stack:** Spring Boot 4 + Spring Web + Spring Data JPA + PostgreSQL + RabbitMQ + WebClient/OpenFeign  
 **Why:** This service owns the Saga workflow, stores trade state, calls User Service synchronously, and communicates with Listing/Billing asynchronously.
 
 **Responsibility:**
@@ -231,7 +231,7 @@ ReceiptGeneratedEvent
 
 **Service name:** `billing-service`
 
-**Stack:** Spring Boot 3 + Spring Data JPA + PostgreSQL + RabbitMQ  
+**Stack:** Spring Boot 4 + Spring Data JPA + PostgreSQL + RabbitMQ  
 **Why:** Billing is internal to the Saga and processes asynchronous payment commands using a simulated ledger.
 
 **Responsibility:**
