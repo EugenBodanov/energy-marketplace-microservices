@@ -1,0 +1,32 @@
+package com.energy.marketplace.trade.application.command.out;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+import java.time.Instant;
+
+public record CloseListingCommand(
+
+        @NotNull(message = "Trade id must not be null")
+        @Positive(message = "Trade id must be positive")
+        Long tradeId,
+
+        @NotNull(message = "Listing id must not be null")
+        @Positive(message = "Listing id must be positive")
+        Long listingId,
+
+        @NotNull(message = "Requested at must not be null")
+        Instant requestedAt
+) {
+
+    public static CloseListingCommand of(
+            Long tradeId,
+            Long listingId
+    ) {
+        return new CloseListingCommand(
+                tradeId,
+                listingId,
+                Instant.now()
+        );
+    }
+}
