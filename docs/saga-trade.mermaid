@@ -1,7 +1,16 @@
 stateDiagram-v2
     [*] --> CREATED
 
-    CREATED --> USER_VALIDATION_PENDING: request
+    CREATED --> USER_VALIDATION_PENDING: sync REST user validation request
+
+    note right of USER_VALIDATION_PENDING
+            Synchronous REST call:
+            Trade Service -> User Service
+            GET /users/{id}/validate
+
+            No message queue here.
+            Saga continues only after REST response.
+    end note
 
     USER_VALIDATION_PENDING --> USER_VALIDATED: valid
     USER_VALIDATION_PENDING --> FAILED: invalid
