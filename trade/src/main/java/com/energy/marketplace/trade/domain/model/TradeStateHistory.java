@@ -1,5 +1,7 @@
 package com.energy.marketplace.trade.domain.model;
 
+import com.energy.marketplace.trade.domain.valueObject.TradeStateTransitionReason;
+
 import java.time.Instant;
 
 @lombok.Getter
@@ -9,14 +11,14 @@ public class TradeStateHistory {
     private Long tradeId;
     private TradeStatus fromStatus;
     private TradeStatus toStatus;
-    private String reason;
+    private TradeStateTransitionReason reason;
     private Instant changedAt;
 
     public TradeStateHistory(
             Long tradeId,
             TradeStatus fromStatus,
             TradeStatus toStatus,
-            String reason
+            TradeStateTransitionReason reason
     ) {
         this.tradeId = tradeId;
         this.fromStatus = fromStatus;
