@@ -48,7 +48,25 @@ services:
     volumes:
       - listing-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d listing_db" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d listing_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  billing-db:
+    image: postgres:16-alpine
+    container_name: energy-billing-db
+    environment:
+      POSTGRES_DB: billing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${BILLING_DB_PORT:-5434}:5432"
+    volumes:
+      - billing-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d billing_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -94,7 +112,31 @@ services:
     ports:
       - "${LISTING_SERVICE_PORT:-8082}:8082"
 
+  billing-service:
+    build:
+      context: ./billing
+    image: energy-community-marketplace/billing-service:local
+    container_name: energy-billing-service
+    depends_on:
+      billing-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_HOST: billing-db
+      DB_PORT: 5432
+      DB_NAME: billing_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "${BILLING_SERVICE_PORT:-8083}:8000"
+
 volumes:
   user-db-data:
   listing-db-data:
+  billing-db-data:
   rabbitmq-data:
