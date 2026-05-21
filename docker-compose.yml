@@ -1,0 +1,100 @@
+services:
+  user-db:
+    image: postgres:16-alpine
+    container_name: energy-user-db
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${USER_DB_PORT:-5432}:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  user-service:
+    build:
+      context: ./user
+    image: energy-community-marketplace/user-service:local
+    container_name: energy-user-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      USER_DB_URL: jdbc:postgresql://user-db:5432/users_db
+      USER_DB_USERNAME: postgres
+      USER_DB_PASSWORD: postgres
+      APP_JWT_SECRET: local-development-user-service-jwt-secret
+      APP_JWT_ISSUER: user-service
+      APP_JWT_EXPIRATION_MINUTES: 60
+    ports:
+      - "${USER_SERVICE_PORT:-8080}:8080"
+
+  listing-db:
+    image: postgres:16-alpine
+    container_name: energy-listing-db
+    environment:
+      POSTGRES_DB: listing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${LISTING_DB_PORT:-5433}:5432"
+    volumes:
+      - listing-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d listing_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: energy-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  listing-service:
+    build:
+      context: ./listing
+    image: energy-community-marketplace/listing-service:local
+    container_name: energy-listing-service
+    depends_on:
+      listing-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8082
+      LISTING_DB_URL: jdbc:postgresql://listing-db:5432/listing_db
+      LISTING_DB_USERNAME: postgres
+      LISTING_DB_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "${LISTING_SERVICE_PORT:-8082}:8082"
+
+volumes:
+  user-db-data:
+  listing-db-data:
+  rabbitmq-data:
