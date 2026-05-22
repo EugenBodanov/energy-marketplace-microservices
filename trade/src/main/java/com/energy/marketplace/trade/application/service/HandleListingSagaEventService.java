@@ -27,7 +27,7 @@ public class HandleListingSagaEventService implements HandleListingSagaEventUseC
     @Transactional
     public void handleListingReserved(HandleListingReservedCommand command) {
         try {
-            Trade trade = loadTradePort.load(command.tradeId());
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
 
             validateListingBelongsToTrade(trade, command.listingId());
 
@@ -73,7 +73,7 @@ public class HandleListingSagaEventService implements HandleListingSagaEventUseC
     @Transactional
     public void handleListingClosed(HandleListingClosedCommand command) {
         try {
-            Trade trade = loadTradePort.load(command.tradeId());
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
 
             validateListingBelongsToTrade(trade, command.listingId());
 

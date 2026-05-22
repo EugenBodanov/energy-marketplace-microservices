@@ -1,10 +1,10 @@
-package com.energy.marketplace.trade.application.result;
+package com.energy.marketplace.trade.adapter.in.web.dto;
 
 import com.energy.marketplace.trade.domain.model.TradeStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record CreateTradeResult(
+public record CreateTradeResponse(
         @NotNull(message = "Trade id must not be null")
         @Positive(message = "Trade id must be positive")
         Long tradeId,

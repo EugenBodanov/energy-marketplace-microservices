@@ -5,7 +5,6 @@ import com.energy.marketplace.trade.application.command.in.HandlePaymentSettledC
 import com.energy.marketplace.trade.application.command.in.HandleReceiptGeneratedCommand;
 import com.energy.marketplace.trade.application.command.out.CloseListingCommand;
 import com.energy.marketplace.trade.application.command.out.GenerateReceiptCommand;
-import com.energy.marketplace.trade.application.event.TradeStatusUpdate;
 import com.energy.marketplace.trade.application.exception.TradeSagaProcessingException;
 import com.energy.marketplace.trade.application.port.in.HandleBillingSagaEventUseCase;
 import com.energy.marketplace.trade.application.port.out.*;
@@ -31,7 +30,7 @@ public class HandleBillingSagaEventService implements HandleBillingSagaEventUseC
     @Transactional
     public void handlePaymentAuthorized(HandlePaymentAuthorizedCommand command) {
         try {
-            Trade trade = loadTradePort.load(command.tradeId());
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
 
             trade.recordPaymentAuthorization(command.paymentAuthorizationId());
 
@@ -77,7 +76,7 @@ public class HandleBillingSagaEventService implements HandleBillingSagaEventUseC
     @Transactional
     public void handlePaymentSettled(HandlePaymentSettledCommand command) {
         try {
-            Trade trade = loadTradePort.load(command.tradeId());
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
 
             transitionRecorder.transition(
                     trade,
@@ -130,7 +129,7 @@ public class HandleBillingSagaEventService implements HandleBillingSagaEventUseC
     @Transactional
     public void handleReceiptGenerated(HandleReceiptGeneratedCommand command) {
         try {
-            Trade trade = loadTradePort.load(command.tradeId());
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
 
             trade.recordReceipt(command.receiptId());
 
