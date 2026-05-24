@@ -1,12 +1,12 @@
-package com.energy.marketplace.trade.application.command.in;
+package com.energy.marketplace.trade.adapter.in.messaging.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
 import java.time.Instant;
-import com.energy.marketplace.trade.domain.valueObject.Money;
 
-public record HandlePaymentAuthorizedCommand(
+public record PaymentAuthorizedEventMessage(
 
         @NotNull(message = "Trade id must not be null")
         @Positive(message = "Trade id must be positive")
@@ -16,7 +16,12 @@ public record HandlePaymentAuthorizedCommand(
         @Positive(message = "Payment authorization id must be positive")
         Long paymentAuthorizationId,
 
-        com.energy.marketplace.trade.domain.valueObject.Money authorizedAmount,
+        @NotNull(message = "Authorized amount must not be null")
+        @Positive(message = "Authorized amount must be positive")
+        BigDecimal authorizedAmount,
+
+        @NotNull(message = "Currency must not be null")
+        String currency,
 
         @NotNull(message = "Occurred at must not be null")
         Instant occurredAt

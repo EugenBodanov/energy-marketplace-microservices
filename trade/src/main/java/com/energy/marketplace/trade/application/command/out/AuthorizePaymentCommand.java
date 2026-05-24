@@ -1,6 +1,6 @@
 package com.energy.marketplace.trade.application.command.out;
 
-import com.energy.marketplace.trade.domain.valueobject.Money;
+import com.energy.marketplace.trade.domain.valueObject.Money;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 

@@ -1,7 +1,7 @@
 package com.energy.marketplace.trade.application.result;
 
 import java.time.Instant;
-import com.energy.marketplace.trade.domain.valueobject.Money;
+import com.energy.marketplace.trade.domain.valueObject.Money;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 

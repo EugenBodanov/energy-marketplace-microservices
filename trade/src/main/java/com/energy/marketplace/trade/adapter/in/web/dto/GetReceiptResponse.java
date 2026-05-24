@@ -3,6 +3,7 @@ package com.energy.marketplace.trade.adapter.in.web.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public record GetReceiptResponse(
@@ -18,7 +19,9 @@ public record GetReceiptResponse(
         @NotNull(message = "Listing id must not be null")
         Long listingId,
         @NotNull(message = "Amount must not be null")
-        com.energy.marketplace.trade.domain.valueobject.Money amount,
+        BigDecimal amount,
+        @NotNull(message = "Currency must not be null")
+        String currency,
         @NotNull(message = "Generated at must not be null")
         Instant generatedAt
 ) {

@@ -3,6 +3,8 @@ package com.energy.marketplace.trade.adapter.in.web.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
+
 public record CreateTradeRequest(
         @NotNull(message = "Buyer id must not be null")
         @Positive(message = "Buyer id must be positive")
@@ -18,6 +20,9 @@ public record CreateTradeRequest(
 
         @NotNull(message = "Amount must not be null")
         @Positive(message = "Amount must be positive")
-        com.energy.marketplace.trade.domain.valueobject.Money amount
+        BigDecimal amount,
+
+        @NotNull(message = "Currency must not be null")
+        String currency
 ) {
 }

@@ -10,6 +10,7 @@ import com.energy.marketplace.trade.application.command.in.GetTradeCommand;
 import com.energy.marketplace.trade.application.result.CreateTradeResult;
 import com.energy.marketplace.trade.application.result.GetReceiptResult;
 import com.energy.marketplace.trade.application.result.GetTradeResult;
+import com.energy.marketplace.trade.domain.valueObject.Money;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,7 +21,7 @@ public class TradeWebMapper {
                 request.buyerId(),
                 request.sellerId(),
                 request.listingId(),
-                request.amount()
+                Money.of(request.amount(), request.currency())
         );
     }
 
@@ -45,13 +46,14 @@ public class TradeWebMapper {
                 result.buyerId(),
                 result.sellerId(),
                 result.listingId(),
-                result.amount(),
+                result.amount().amount(),
+                result.amount().currencyCode(),
                 result.status()
         );
     }
 
     public GetReceiptResponse toGetReceiptResponse(GetReceiptResult result) {
-        return new GetReceiptResult(result.tradeId(), result.receiptId(), result.buyerId(), result.sellerId(),
-                result.listingId(), result.amount(), result.generatedAt())
+        return new GetReceiptResponse(result.tradeId(), result.receiptId(), result.buyerId(), result.sellerId(),
+                result.listingId(), result.amount().amount(), result.amount().currencyCode(), result.generatedAt());
     }
 }

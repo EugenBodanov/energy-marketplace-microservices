@@ -4,6 +4,8 @@ import com.energy.marketplace.trade.domain.model.TradeStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
+
 public record GetTradeResponse(
         @NotNull(message = "Id must not be null")
         @Positive(message = "Id must be positive")
@@ -23,7 +25,10 @@ public record GetTradeResponse(
 
         @NotNull(message = "Amount must not be null")
         @Positive(message = "Amount must be positive")
-        com.energy.marketplace.trade.domain.valueobject.Money amount,
+        BigDecimal amount,
+
+        @NotNull(message = "Currency must not be null")
+        String currency,
 
         @NotNull(message = "Status must not be null")
         TradeStatus status

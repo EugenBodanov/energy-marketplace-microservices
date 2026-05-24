@@ -10,20 +10,20 @@ import com.energy.marketplace.trade.application.service.CreateTradeService;
 import com.energy.marketplace.trade.application.service.GetReceiptService;
 import com.energy.marketplace.trade.application.service.GetTradeService;
 import jakarta.validation.Valid;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@NoArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/trades")
 public class TradeController {
 
-    CreateTradeService createTradeService;
-    TradeWebMapper tradeWebMapper;
-    GetTradeService getTradeService;
-    GetReceiptService getReceiptService;
+    private final CreateTradeService createTradeService;
+    private final TradeWebMapper tradeWebMapper;
+    private final GetTradeService getTradeService;
+    private final GetReceiptService getReceiptService;
 
     @PostMapping
     public CreateTradeResponse createTrade(@Valid @RequestBody CreateTradeRequest request) {
@@ -35,12 +35,12 @@ public class TradeController {
         return tradeWebMapper.toGetTradeResponse(getTradeService.getTrade(tradeWebMapper.toGetTradeCommand(tradeId)));
     }
 
-    @GetMapping("/{buyerId}")
+    @GetMapping("/buyer/{buyerId}")
     public List<GetTradeResponse> getTrades(@PathVariable("buyerId") Long buyerId) {
         return getTradeService.getTradesByBuyerId(buyerId).stream().map(tradeWebMapper::toGetTradeResponse).toList();
     }
 
-    @GetMapping("/trades/{tradeId}/receipt")
+    @GetMapping("/{tradeId}/receipt")
     public GetReceiptResponse getReceipt(@PathVariable("tradeId") Long tradeId){
         return tradeWebMapper.toGetReceiptResponse(getReceiptService.getReceipt(
                 tradeWebMapper.toGetReceiptCommand(tradeId)));

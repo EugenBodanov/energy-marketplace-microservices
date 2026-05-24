@@ -1,7 +1,7 @@
 package com.energy.marketplace.trade.domain.model;
 
 import com.energy.marketplace.trade.domain.exception.InvalidTradeStateException;
-import com.energy.marketplace.trade.domain.valueobject.Money;
+import com.energy.marketplace.trade.domain.valueObject.Money;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;

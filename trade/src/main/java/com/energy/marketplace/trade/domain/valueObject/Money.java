@@ -1,11 +1,20 @@
-package com.energy.marketplace.trade.domain.valueobject;
+package com.energy.marketplace.trade.domain.valueObject;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Currency;
 import java.util.Objects;
 
-public record Money(BigDecimal amount, Currency currency) {
+public record Money(
+        @NotNull(message = "Amount must not be null")
+        @Positive(message = "Amount must be positive")
+        BigDecimal amount,
+        @NotNull(message = "Currency must not be null")
+        Currency currency
+) {
 
     public Money {
         Objects.requireNonNull(amount, "Amount must not be null");
