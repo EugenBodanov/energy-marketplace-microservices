@@ -21,7 +21,7 @@ public class UserBeanConfig {
     }
 
     @Bean
-    public LoginUserUseCase saveUserUseCase(LoadUserPort loadUserPort, PasswordHasherPort passwordHasherPort, TokenIssuerPort tokenIssuerPort) {
+    public LoginUserUseCase loginUserUseCase(LoadUserPort loadUserPort, PasswordHasherPort passwordHasherPort, TokenIssuerPort tokenIssuerPort) {
         return new LoginUserService(loadUserPort, passwordHasherPort, tokenIssuerPort);
     }
 
@@ -31,7 +31,7 @@ public class UserBeanConfig {
     }
 
     @Bean
-    ValidateUserUseCase validateUserUseCase(LoadUserPort loadUserPort) {
+    public ValidateUserUseCase validateUserUseCase(LoadUserPort loadUserPort) {
         return new ValidateUserService(loadUserPort);
     }
 
