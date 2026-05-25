@@ -94,7 +94,48 @@ services:
     ports:
       - "${LISTING_SERVICE_PORT:-8082}:8082"
 
+  trade-db:
+    image: postgres:16-alpine
+    container_name: energy-trade-db
+    environment:
+      POSTGRES_DB: trade_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${TRADE_DB_PORT:-5434}:5432"
+    volumes:
+      - trade-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d trade_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  trade-service:
+    build:
+      context: ./trade
+    image: energy-community-marketplace/trade-service:local
+    container_name: energy-trade-service
+    depends_on:
+      trade-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      TRADE_DB_URL: jdbc:postgresql://trade-db:5432/trade_db
+      TRADE_DB_USERNAME: postgres
+      TRADE_DB_PASSWORD: postgres
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "${TRADE_SERVICE_PORT:-8081}:8081"
+
 volumes:
   user-db-data:
   listing-db-data:
+  trade-db-data:
   rabbitmq-data:
