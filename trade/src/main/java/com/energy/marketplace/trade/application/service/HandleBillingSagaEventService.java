@@ -1,8 +1,8 @@
 package com.energy.marketplace.trade.application.service;
 
-import com.energy.marketplace.trade.application.command.in.HandlePaymentAuthorizedCommand;
-import com.energy.marketplace.trade.application.command.in.HandlePaymentSettledCommand;
-import com.energy.marketplace.trade.application.command.in.HandleReceiptGeneratedCommand;
+import com.energy.marketplace.trade.application.command.in.*;
+import com.energy.marketplace.trade.application.command.out.CancelListingCommand;
+import com.energy.marketplace.trade.application.command.out.CancelPaymentCommand;
 import com.energy.marketplace.trade.application.command.out.CloseListingCommand;
 import com.energy.marketplace.trade.application.command.out.GenerateReceiptCommand;
 import com.energy.marketplace.trade.application.exception.TradeSagaProcessingException;
@@ -153,6 +153,145 @@ public class HandleBillingSagaEventService implements HandleBillingSagaEventUseC
         } catch (RuntimeException exception) {
             throw new TradeSagaProcessingException(
                     "Failed to handle ReceiptGenerated event for tradeId=" + command.tradeId(),
+                    exception
+            );
+        }
+    }
+
+    @Override
+    public void handlePaymentAuthorizationFailed(HandlePaymentAuthorizationFailedCommand command) {
+        try {
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
+
+            transitionRecorder.transition(
+                    trade,
+                    TradeStateTransitionReasonCode.PAYMENT_AUTHORIZATION_FAILED,
+                    trade::markListingCompensationPendingFromPaymentAuthorizationFailure
+            );
+
+            saveTradePort.save(trade);
+
+            sendListingCommandPort.cancelListing(
+                    CancelListingCommand.of(
+                            trade.getId(),
+                            trade.getListingId()
+                    )
+            );
+
+            tradeStateUpdateNotifier.publishTradeStateUpdate(trade, TradeStateTransitionReasonCode.LISTING_COMPENSATION_REQUESTED);
+
+        } catch (TradeSagaProcessingException exception) {
+            throw exception;
+        } catch (InvalidTradeStateException exception) {
+            throw new TradeSagaProcessingException(
+                    "Cannot handle PAYMENT_AUTHORIZATION_FAILED event because trade state transition is invalid",
+                    exception
+            );
+        } catch (RuntimeException exception) {
+            throw new TradeSagaProcessingException(
+                    "Failed to handle PAYMENT_AUTHORIZATION_FAILED event for tradeId=" + command.tradeId(),
+                    exception
+            );
+        }
+    }
+
+    @Override
+    public void handleCancelPaymentFailed(HandleCancelPaymentFailed command) {
+        try {
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
+
+
+            transitionRecorder.transition(
+                    trade,
+                    TradeStateTransitionReasonCode.PAYMENT_ROLLBACK_FAILED,
+                    trade::markCompensationFailedFromPaymentRollback
+            );
+
+            saveTradePort.save(trade);
+
+            tradeStateUpdateNotifier.publishTradeStateUpdate(trade, TradeStateTransitionReasonCode.PAYMENT_ROLLBACK_FAILED);
+
+        } catch (InvalidTradeStateException exception) {
+            throw new TradeSagaProcessingException(
+                    "Cannot handle PAYMENT_ROLLBACK_FAILED event because trade state transition is invalid",
+                    exception
+            );
+        } catch (RuntimeException exception) {
+            throw new TradeSagaProcessingException(
+                    "Failed to handle PAYMENT_ROLLBACK_FAILED event for tradeId=" + command.tradeId(),
+                    exception
+            );
+        }
+    }
+
+    @Override
+    @Transactional
+    public void handleCancelPaymentSuccess(HandleCancelPaymentSuccess command) {
+        try {
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
+
+            transitionRecorder.transition(
+                    trade,
+                    TradeStateTransitionReasonCode.PAYMENT_ROLLBACK_SUCCEEDED,
+                    trade::markListingCompensationPendingAfterPaymentRollback
+            );
+
+            saveTradePort.save(trade);
+
+            sendListingCommandPort.cancelListing(
+                    CancelListingCommand.of(
+                            trade.getId(),
+                            trade.getListingId()
+                    )
+            );
+
+            tradeStateUpdateNotifier.publishTradeStateUpdate(trade, TradeStateTransitionReasonCode.LISTING_COMPENSATION_REQUESTED);
+
+        } catch (InvalidTradeStateException exception) {
+            throw new TradeSagaProcessingException(
+                    "Cannot handle PAYMENT_ROLLBACK_SUCCEEDED event because trade state transition is invalid",
+                    exception
+            );
+        } catch (RuntimeException exception) {
+            throw new TradeSagaProcessingException(
+                    "Failed to handle PAYMENT_ROLLBACK_SUCCEEDED event for tradeId=" + command.tradeId(),
+                    exception
+            );
+        }
+    }
+
+    @Override
+    @Transactional
+    public void handlePaymentSettlementFailed(HandlePaymentSettlementFailedCommand command) {
+        try {
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
+
+            transitionRecorder.transition(
+                    trade,
+                    TradeStateTransitionReasonCode.PAYMENT_SETTLEMENT_FAILED,
+                    trade::markPaymentRollbackPendingFromSettlementFailure
+            );
+
+            saveTradePort.save(trade);
+
+            sendBillingCommandPort.cancelPayment(
+                    CancelPaymentCommand.of(
+                            trade.getId(),
+                            trade.getPaymentAuthorizationId(),
+                            trade.getAmount()
+                    )
+            );
+
+            tradeStateUpdateNotifier.publishTradeStateUpdate(trade, TradeStateTransitionReasonCode.PAYMENT_ROLLBACK_REQUESTED);
+
+        } catch (InvalidTradeStateException exception) {
+            throw new TradeSagaProcessingException(
+                    "Cannot handle PAYMENT_SETTLEMENT_FAILED event because trade state transition is invalid",
+                    exception
+            );
+        } catch (RuntimeException exception) {
+            throw new TradeSagaProcessingException(
+                    "Failed to handle PAYMENT_SETTLEMENT_FAILED event for tradeId=" + command.tradeId(),
                     exception
             );
         }

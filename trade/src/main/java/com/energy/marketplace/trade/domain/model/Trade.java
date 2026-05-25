@@ -148,7 +148,7 @@ public class Trade {
         );
     }
 
-    public void markPaymentRollbackPendingFromListingClosingFailure() {
+    public void markPaymentRollbackPendingFromListingCloseFailure() {
         changeStatus(
                 TradeStatus.LISTING_CLOSING_PENDING,
                 TradeStatus.PAYMENT_ROLLBACK_PENDING

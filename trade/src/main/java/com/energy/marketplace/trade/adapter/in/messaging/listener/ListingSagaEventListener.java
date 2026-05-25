@@ -41,6 +41,38 @@ public class ListingSagaEventListener extends Listener{
                             )
                     );
                 }
+                case "LISTING_RESERVATION_FAILED" -> {
+                    ListingReservationFailedEventMessage eventMessage = objectMapper.readValue(event, ListingReservationFailedEventMessage.class);
+                    listingSagaEventService.handleListingReservationFailed(
+                            listingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "LISTING_CLOSE_FAILED" -> {
+                    ListingCloseFailedEventMessage eventMessage = objectMapper.readValue(event, ListingCloseFailedEventMessage.class);
+                    listingSagaEventService.listingCloseFailed(
+                            listingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "LISTING_COMPENSATION_SUCCEEDED" -> {
+                    ListingCompensationSucceededEventMessage eventMessage = objectMapper.readValue(event, ListingCompensationSucceededEventMessage.class);
+                    listingSagaEventService.cancelListingSuccess(
+                            listingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "LISTING_COMPENSATION_FAILED" -> {
+                    ListingCompensationFailedEventMessage eventMessage = objectMapper.readValue(event, ListingCompensationFailedEventMessage.class);
+                    listingSagaEventService.cancelListingFailed(
+                            listingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
                 default -> throw new IllegalArgumentException(
                         "Unknown listing event type: " + eventType
                 );

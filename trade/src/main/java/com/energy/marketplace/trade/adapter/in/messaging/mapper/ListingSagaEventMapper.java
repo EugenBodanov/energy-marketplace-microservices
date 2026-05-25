@@ -1,9 +1,7 @@
 package com.energy.marketplace.trade.adapter.in.messaging.mapper;
 
-import com.energy.marketplace.trade.adapter.in.messaging.dto.ListingClosedEventMessage;
-import com.energy.marketplace.trade.adapter.in.messaging.dto.ListingReservedEventMessage;
-import com.energy.marketplace.trade.application.command.in.HandleListingClosedCommand;
-import com.energy.marketplace.trade.application.command.in.HandleListingReservedCommand;
+import com.energy.marketplace.trade.adapter.in.messaging.dto.*;
+import com.energy.marketplace.trade.application.command.in.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,4 +16,19 @@ public class ListingSagaEventMapper {
         return new HandleListingClosedCommand(message.tradeId(), message.listingId(), message.occurredAt());
     }
 
+    public HandleListingReservationFailedCommand toCommand(ListingReservationFailedEventMessage message) {
+        return new HandleListingReservationFailedCommand(message.tradeId(), message.listingId(), message.occurredAt());
+    }
+
+    public HandleListingCloseFailedCommand toCommand(ListingCloseFailedEventMessage message) {
+        return new HandleListingCloseFailedCommand(message.tradeId(), message.listingId(), message.occurredAt());
+    }
+
+    public HandleCancelListingSuccess toCommand(ListingCompensationSucceededEventMessage message) {
+        return new HandleCancelListingSuccess(message.tradeId(), message.listingId(), message.occurredAt());
+    }
+
+    public HandleCancelListingFailed toCommand(ListingCompensationFailedEventMessage message) {
+        return new HandleCancelListingFailed(message.tradeId(), message.listingId(), message.occurredAt());
+    }
 }

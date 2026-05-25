@@ -1,8 +1,6 @@
 package com.energy.marketplace.trade.adapter.in.messaging.listener;
 
-import com.energy.marketplace.trade.adapter.in.messaging.dto.PaymentAuthorizedEventMessage;
-import com.energy.marketplace.trade.adapter.in.messaging.dto.PaymentSettledEventMessage;
-import com.energy.marketplace.trade.adapter.in.messaging.dto.ReceiptGeneratedEventMessage;
+import com.energy.marketplace.trade.adapter.in.messaging.dto.*;
 import com.energy.marketplace.trade.adapter.in.messaging.mapper.BillingSagaEventMapper;
 import com.energy.marketplace.trade.application.service.HandleBillingSagaEventService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,6 +45,38 @@ public class BillingSagaEventListener extends Listener{
                 case "RECEIPT_GENERATED" -> {
                     ReceiptGeneratedEventMessage eventMessage = objectMapper.readValue(event, ReceiptGeneratedEventMessage.class);
                     billingSagaEventService.handleReceiptGenerated(
+                            billingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "PAYMENT_AUTHORIZATION_FAILED" -> {
+                    PaymentAuthorizationFailedEventMessage eventMessage = objectMapper.readValue(event, PaymentAuthorizationFailedEventMessage.class);
+                    billingSagaEventService.handlePaymentAuthorizationFailed(
+                            billingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "PAYMENT_SETTLEMENT_FAILED" -> {
+                    PaymentSettlementFailedEventMessage eventMessage = objectMapper.readValue(event, PaymentSettlementFailedEventMessage.class);
+                    billingSagaEventService.handlePaymentSettlementFailed(
+                            billingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "CANCEL_PAYMENT_SUCCESS" -> {
+                    CancelPaymentSuccessEventMessage eventMessage = objectMapper.readValue(event, CancelPaymentSuccessEventMessage.class);
+                    billingSagaEventService.handleCancelPaymentSuccess(
+                            billingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
+                case "CANCEL_PAYMENT_FAILED" -> {
+                    CancelPaymentFailedEventMessage eventMessage = objectMapper.readValue(event, CancelPaymentFailedEventMessage.class);
+                    billingSagaEventService.handleCancelPaymentFailed(
                             billingSagaEventMapper.toCommand(
                                     eventMessage
                             )

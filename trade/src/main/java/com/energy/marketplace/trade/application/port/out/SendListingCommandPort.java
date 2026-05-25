@@ -1,5 +1,6 @@
 package com.energy.marketplace.trade.application.port.out;
 
+import com.energy.marketplace.trade.application.command.out.CancelListingCommand;
 import com.energy.marketplace.trade.application.command.out.CloseListingCommand;
 import com.energy.marketplace.trade.application.command.out.ReserveListingCommand;
 
@@ -9,4 +10,5 @@ public interface SendListingCommandPort {
 
     void closeListing(CloseListingCommand command);
 
+    void cancelListing(CancelListingCommand command);
 }

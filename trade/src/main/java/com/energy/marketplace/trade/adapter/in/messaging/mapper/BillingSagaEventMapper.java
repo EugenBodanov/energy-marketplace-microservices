@@ -1,11 +1,7 @@
 package com.energy.marketplace.trade.adapter.in.messaging.mapper;
 
-import com.energy.marketplace.trade.adapter.in.messaging.dto.PaymentAuthorizedEventMessage;
-import com.energy.marketplace.trade.adapter.in.messaging.dto.PaymentSettledEventMessage;
-import com.energy.marketplace.trade.adapter.in.messaging.dto.ReceiptGeneratedEventMessage;
-import com.energy.marketplace.trade.application.command.in.HandlePaymentAuthorizedCommand;
-import com.energy.marketplace.trade.application.command.in.HandlePaymentSettledCommand;
-import com.energy.marketplace.trade.application.command.in.HandleReceiptGeneratedCommand;
+import com.energy.marketplace.trade.adapter.in.messaging.dto.*;
+import com.energy.marketplace.trade.application.command.in.*;
 import com.energy.marketplace.trade.domain.valueObject.Money;
 import org.springframework.stereotype.Component;
 
@@ -42,5 +38,21 @@ public class BillingSagaEventMapper {
         return new HandleReceiptGeneratedCommand(
                 event.tradeId(), event.receiptId(), event.occurredAt()
         );
+    }
+
+    public HandlePaymentAuthorizationFailedCommand toCommand(PaymentAuthorizationFailedEventMessage event){
+        return new HandlePaymentAuthorizationFailedCommand(event.tradeId(), event.paymentAuthorizationId(), event.occurredAt());
+    }
+
+    public HandlePaymentSettlementFailedCommand toCommand(PaymentSettlementFailedEventMessage event) {
+        return new HandlePaymentSettlementFailedCommand(event.tradeId(), event.paymentAuthorizationId());
+    }
+
+    public HandleCancelPaymentSuccess toCommand(CancelPaymentSuccessEventMessage event) {
+        return new HandleCancelPaymentSuccess(event.tradeId(), event.paymentAuthorizationId());
+    }
+
+    public HandleCancelPaymentFailed toCommand(CancelPaymentFailedEventMessage event) {
+        return new HandleCancelPaymentFailed(event.tradeId(), event.paymentAuthorizationId());
     }
 }

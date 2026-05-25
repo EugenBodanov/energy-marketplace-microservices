@@ -1,3 +1,9 @@
 spring:
   application:
     name: trade
+
+trade:
+  listing-events:
+    queue: trade.listing.events.queue
+  billing-events:
+    queue: trade.billing.events.queue
