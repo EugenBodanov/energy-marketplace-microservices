@@ -1,6 +1,6 @@
 package com.energy.marketplace.trade.adapter.in.messaging.listener;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public class Listener {
     protected String readEventType(JsonNode root) {

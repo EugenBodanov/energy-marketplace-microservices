@@ -11,7 +11,6 @@ import com.energy.marketplace.trade.application.service.GetReceiptService;
 import com.energy.marketplace.trade.application.service.GetTradeService;
 import com.energy.marketplace.trade.domain.model.TradeStatus;
 import com.energy.marketplace.trade.domain.valueObject.Money;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -38,7 +38,7 @@ class TradeControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper jsonMapper = new JsonMapper();
 
     @MockitoBean
     private CreateTradeService createTradeService;
@@ -65,7 +65,7 @@ class TradeControllerTest {
 
         mockMvc.perform(post("/trades")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tradeId").value(100L))
                 .andExpect(jsonPath("$.status").value("CREATED"));

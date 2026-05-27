@@ -2,8 +2,6 @@ package com.energy.marketplace.trade.application.service;
 
 import com.energy.marketplace.trade.application.command.in.CreateTradeCommand;
 import com.energy.marketplace.trade.application.command.out.ReserveListingCommand;
-import com.energy.marketplace.trade.application.event.TradeStatusUpdate;
-import com.energy.marketplace.trade.application.port.out.PublishTradeUpdatePort;
 import com.energy.marketplace.trade.application.port.out.ValidateTradeParticipantsPort;
 import com.energy.marketplace.trade.application.exception.TradeSagaProcessingException;
 import com.energy.marketplace.trade.application.port.in.CreateTradeUseCase;
