@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     rabbitmq_password: str = "guest"
 
     # RabbitMQ topology
-    exchange_name: str = "billing.exchange"
-    billing_queue: str = "billing.commands"
+    exchange_name: str = "trade.saga.exchange"
+    billing_queue: str = "billing.commands.queue"
     billing_dlq: str = "billing.commands.dlq"
 
     class Config:

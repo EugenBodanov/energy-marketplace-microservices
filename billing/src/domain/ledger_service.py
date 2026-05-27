@@ -16,7 +16,9 @@ from src.ports.repositories import (
 
 
 class InsufficientFundsError(Exception):
-    pass
+    def __init__(self, message: str, authorization_id: int):
+        super().__init__(message)
+        self.authorization_id = authorization_id
 
 
 class AuthorizationNotFoundError(Exception):
@@ -60,10 +62,11 @@ class LedgerService:
                 status=TransactionStatus.FAILED,
                 created_at=datetime.now(timezone.utc),
             )
-            await self._authorizations.save(failed)
+            saved_failed = await self._authorizations.save(failed)
             raise InsufficientFundsError(
                 f"Insufficient funds: available={account.available.amount} "
-                f"{account.available.currency}, required={amount.amount} {amount.currency}"
+                f"{account.available.currency}, required={amount.amount} {amount.currency}",
+                saved_failed.id,
             )
 
         # Hold the amount — do not deduct yet, just reserve it
@@ -121,6 +124,34 @@ class LedgerService:
             created_at=datetime.now(timezone.utc),
         )
         return await self._settlements.save(settlement)
+
+    async def cancel_payment(
+        self,
+        trade_id: int,
+        authorization_id: int,
+        amount: Money,
+    ) -> Authorization:
+        authorization = await self._authorizations.find_by_trade_id(trade_id)
+        if not authorization:
+            raise AuthorizationNotFoundError(
+                f"No authorization found for trade {trade_id}"
+            )
+
+        if authorization.status != TransactionStatus.COMPLETED:
+            return authorization
+
+        if authorization.id != authorization_id:
+            raise AuthorizationNotFoundError(
+                f"Authorization id mismatch for trade {trade_id}: "
+                f"expected {authorization.id}, got {authorization_id}"
+            )
+
+        account = await self._accounts.get_by_user_id(authorization.buyer_id)
+        account.reserved = account.reserved.subtract(amount)
+        await self._accounts.save(account)
+
+        authorization.status = TransactionStatus.FAILED
+        return await self._authorizations.save(authorization)
 
     async def generate_receipt(
         self,

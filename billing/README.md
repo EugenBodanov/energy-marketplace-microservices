@@ -58,38 +58,43 @@ pytest tests/unit -v
 
 ## Commands received
 
-Consumed from `billing.commands` queue, bound to `billing.exchange`:
+Consumed from `billing.commands.queue`, bound to `trade.saga.exchange`:
 
 | Routing key | Source command | Action |
 |---|---|---|
-| billing.payment.authorize | AuthorizePaymentCommand | Reserve funds from buyer |
-| billing.payment.settle | SettlePaymentCommand | Transfer funds buyer → seller |
-| billing.receipt.generate | GenerateReceiptCommand | Generate trade receipt |
+| billing.authorize.command | AuthorizePaymentCommand | Reserve funds from buyer |
+| billing.settle.command | SettlePaymentCommand | Transfer funds buyer to seller |
+| billing.generate_receipt.command | GenerateReceiptCommand | Generate trade receipt |
+| billing.cancel_payment.command | CancelPaymentCommand | Release reserved buyer funds |
 
 ## Events published
 
-Published to `billing.exchange`:
+Published to `trade.saga.exchange`:
 
 | Routing key | Matches Java class | Trigger |
 |---|---|---|
-| billing.payment.authorized | HandlePaymentAuthorizedCommand | Authorization success |
-| billing.payment.authorization.failed | — | Insufficient funds |
-| billing.payment.settled | HandlePaymentSettledCommand | Settlement success |
-| billing.payment.settlement.failed | — | Settlement error |
-| billing.receipt.generated | HandleReceiptGeneratedCommand | Receipt created |
+| payment.authorized.event | HandlePaymentAuthorizedCommand | Authorization success |
+| payment.authorization_failed.event | HandlePaymentAuthorizationFailedCommand | Insufficient funds |
+| payment.settled.event | HandlePaymentSettledCommand | Settlement success |
+| payment.settlement_failed.event | HandlePaymentSettlementFailedCommand | Settlement error |
+| receipt.generated.event | HandleReceiptGeneratedCommand | Receipt created |
+| payment.rolled_back.event | HandleCancelPaymentSuccess / HandleCancelPaymentFailed | Reserved funds released or release failed |
 
-## Message contract — Money
+## Message contract - Money
 
-All amounts follow the Java Money value object shape:
+Trade commands send most amounts as flat fields:
 
 ```json
 {"amount": "100.00", "currency": "EUR"}
 ```
+
+`CancelPaymentCommand` may send a nested Money object; Billing accepts both flat and nested shapes.
 
 ## Key design decisions
 
 - IDs are integers (matching Java `Long`)
 - `SettlePaymentCommand` has no buyerId/sellerId — looked up from stored authorization
 - `GenerateReceiptCommand` is a separate command, not auto-triggered after settle
+- Outgoing events include `eventType` because Trade routes inside its listener by that field
 - All operations are idempotent — safe to retry
 - Failed messages go to `billing.commands.dlq` for manual inspection

@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 # Routing keys follow the convention: service.entity.action
 # These must match what Trade Service uses when publishing commands
 ROUTING_KEY_TO_HANDLER = {
-    "billing.payment.authorize": handlers.handle_authorize_payment,
-    "billing.payment.settle": handlers.handle_settle_payment,
-    "billing.receipt.generate": handlers.handle_generate_receipt,
+    "billing.authorize.command": handlers.handle_authorize_payment,
+    "billing.settle.command": handlers.handle_settle_payment,
+    "billing.generate_receipt.command": handlers.handle_generate_receipt,
+    "billing.cancel_payment.command": handlers.handle_cancel_payment,
 }
 
 
@@ -26,7 +27,7 @@ async def start_consumer(connection: aio_pika.abc.AbstractRobustConnection) -> N
     # Declare exchange
     exchange = await channel.declare_exchange(
         settings.exchange_name,
-        aio_pika.ExchangeType.TOPIC,
+        aio_pika.ExchangeType.DIRECT,
         durable=True,
     )
 
@@ -43,8 +44,8 @@ async def start_consumer(connection: aio_pika.abc.AbstractRobustConnection) -> N
         },
     )
 
-    # Bind to all billing.* routing keys
-    await queue.bind(exchange, routing_key="billing.#")
+    for routing_key in ROUTING_KEY_TO_HANDLER:
+        await queue.bind(exchange, routing_key=routing_key)
 
     publisher = EventPublisher(channel)
 

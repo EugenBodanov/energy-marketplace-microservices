@@ -26,7 +26,7 @@ class EventPublisher:
     async def _publish(self, routing_key: str, payload: dict) -> None:
         exchange = await self._channel.declare_exchange(
             settings.exchange_name,
-            aio_pika.ExchangeType.TOPIC,
+            aio_pika.ExchangeType.DIRECT,
             durable=True,
         )
         body = json.dumps(payload, default=_serialize).encode()
@@ -51,14 +51,13 @@ class EventPublisher:
         Fields: tradeId, paymentAuthorizationId, authorizedAmount, occurredAt
         """
         await self._publish(
-            "billing.payment.authorized",
+            "payment.authorized.event",
             {
+                "eventType": "PAYMENT_AUTHORIZED",
                 "tradeId": trade_id,
                 "paymentAuthorizationId": payment_authorization_id,
-                "authorizedAmount": {
-                    "amount": authorized_amount.amount,
-                    "currency": authorized_amount.currency,
-                },
+                "authorizedAmount": authorized_amount.amount,
+                "currency": authorized_amount.currency,
                 "occurredAt": datetime.now(timezone.utc),
             },
         )
@@ -66,13 +65,14 @@ class EventPublisher:
     async def payment_authorization_failed(
         self,
         trade_id: int,
-        reason: str,
+        payment_authorization_id: int,
     ) -> None:
         await self._publish(
-            "billing.payment.authorization.failed",
+            "payment.authorization_failed.event",
             {
+                "eventType": "PAYMENT_AUTHORIZATION_FAILED",
                 "tradeId": trade_id,
-                "reason": reason,
+                "paymentAuthorizationId": payment_authorization_id,
                 "occurredAt": datetime.now(timezone.utc),
             },
         )
@@ -88,14 +88,13 @@ class EventPublisher:
         Fields: tradeId, paymentSettlementId, settledAmount, occurredAt
         """
         await self._publish(
-            "billing.payment.settled",
+            "payment.settled.event",
             {
+                "eventType": "PAYMENT_SETTLED",
                 "tradeId": trade_id,
                 "paymentSettlementId": payment_settlement_id,
-                "settledAmount": {
-                    "amount": settled_amount.amount,
-                    "currency": settled_amount.currency,
-                },
+                "settledAmount": settled_amount.amount,
+                "currency": settled_amount.currency,
                 "occurredAt": datetime.now(timezone.utc),
             },
         )
@@ -103,13 +102,14 @@ class EventPublisher:
     async def payment_settlement_failed(
         self,
         trade_id: int,
-        reason: str,
+        payment_authorization_id: int,
     ) -> None:
         await self._publish(
-            "billing.payment.settlement.failed",
+            "payment.settlement_failed.event",
             {
+                "eventType": "PAYMENT_SETTLEMENT_FAILED",
                 "tradeId": trade_id,
-                "reason": reason,
+                "paymentAuthorizationId": payment_authorization_id,
                 "occurredAt": datetime.now(timezone.utc),
             },
         )
@@ -124,10 +124,41 @@ class EventPublisher:
         Fields: tradeId, receiptId, occurredAt
         """
         await self._publish(
-            "billing.receipt.generated",
+            "receipt.generated.event",
             {
+                "eventType": "RECEIPT_GENERATED",
                 "tradeId": trade_id,
                 "receiptId": receipt_id,
+                "occurredAt": datetime.now(timezone.utc),
+            },
+        )
+
+    async def cancel_payment_success(
+        self,
+        trade_id: int,
+        payment_authorization_id: int,
+    ) -> None:
+        await self._publish(
+            "payment.rolled_back.event",
+            {
+                "eventType": "CANCEL_PAYMENT_SUCCESS",
+                "tradeId": trade_id,
+                "paymentAuthorizationId": payment_authorization_id,
+                "occurredAt": datetime.now(timezone.utc),
+            },
+        )
+
+    async def cancel_payment_failed(
+        self,
+        trade_id: int,
+        payment_authorization_id: int,
+    ) -> None:
+        await self._publish(
+            "payment.rolled_back.event",
+            {
+                "eventType": "CANCEL_PAYMENT_FAILED",
+                "tradeId": trade_id,
+                "paymentAuthorizationId": payment_authorization_id,
                 "occurredAt": datetime.now(timezone.utc),
             },
         )
