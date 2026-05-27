@@ -1,0 +1,88 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      # Enable gateway routes from RouteLocator bean
+      routes: []  # Routes defined in ApiGatewayApplication.java
+
+      # Global CORS configuration
+      global-cors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+            maxAge: 3600
+
+server:
+  port: 8000
+
+logging:
+  level:
+    root: INFO
+    com.energy.marketplace.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+
+# =========================================================
+# PROFILE CONFIGURATIONS
+# =========================================================
+
+# Default Profile (When running inside IntelliJ locally)
+gateway:
+  services:
+    user-service:
+      url: "${USER_SERVICE_URL:-http://localhost:8080}"
+    listing-service:
+      url: "${LISTING_SERVICE_URL:-http://localhost:8082}"
+    trade-service:
+      url: "${TRADE_SERVICE_URL:-http://localhost:8083}"
+
+---
+# Docker Compose Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+gateway:
+  services:
+    user-service:
+      url: "${USER_SERVICE_URL:-http://user-serivce:8080}"
+    listing-service:
+      url: "${LISTING_SERVICE_URL:-http://listing-service:8082}"
+    trade-service:
+      url: "${TRADE_SERVICE_URL:-http://trade-service:8081}"
+
+---
+# Google Cloud Profile
+spring:
+  config:
+    activate:
+      on-profile: cloud
+
+gateway:
+  services:
+    user-service:
+      url: "https://user-service-${CLOUD_PROJECT_ID}.run.app"
+    listing-service:
+      url: "https://listing-service-${CLOUD_PROJECT_ID}.run.app"
+    trade-service:
+      url: "https://trade-service-${CLOUD_PROJECT_ID}.run.app"
