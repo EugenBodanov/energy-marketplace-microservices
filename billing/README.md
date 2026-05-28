@@ -54,7 +54,7 @@ pytest tests/unit -v
 |---|---|---|
 | GET | /health | Health check |
 | GET | /billing/accounts/{userId} | User balance |
-| GET | /billing/receipts/{tradeId} | Trade receipt |
+| GET | /billing/receipts/{receiptId} | Trade receipt |
 
 ## Commands received
 
