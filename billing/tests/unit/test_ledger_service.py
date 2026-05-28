@@ -130,10 +130,11 @@ async def test_authorize_fails_on_insufficient_funds():
     seller = make_account(user_id=2, balance="0.00")
     ledger, _, _, _ = make_ledger([buyer, seller])
 
-    with pytest.raises(InsufficientFundsError):
+    with pytest.raises(InsufficientFundsError) as exc_info:
         await ledger.authorize(
             trade_id=10, buyer_id=1, seller_id=2, amount=eur("500.00")
         )
+    assert exc_info.value.authorization_id > 0
 
 
 @pytest.mark.asyncio
@@ -191,6 +192,44 @@ async def test_settle_is_idempotent():
     )
 
     assert s1.id == s2.id
+
+
+@pytest.mark.asyncio
+async def test_cancel_payment_releases_reserved_funds():
+    buyer = make_account(user_id=1, balance="1000.00")
+    seller = make_account(user_id=2, balance="0.00")
+    ledger, _, _, _ = make_ledger([buyer, seller])
+
+    auth = await ledger.authorize(
+        trade_id=10, buyer_id=1, seller_id=2, amount=eur("300.00")
+    )
+    canceled = await ledger.cancel_payment(
+        trade_id=10, authorization_id=auth.id, amount=eur("300.00")
+    )
+
+    assert canceled.status == TransactionStatus.FAILED
+    assert buyer.balance.amount == Decimal("1000.00")
+    assert buyer.reserved.amount == Decimal("0.00")
+
+
+@pytest.mark.asyncio
+async def test_cancel_payment_is_idempotent():
+    buyer = make_account(user_id=1, balance="1000.00")
+    seller = make_account(user_id=2, balance="0.00")
+    ledger, _, _, _ = make_ledger([buyer, seller])
+
+    auth = await ledger.authorize(
+        trade_id=10, buyer_id=1, seller_id=2, amount=eur("300.00")
+    )
+    first = await ledger.cancel_payment(
+        trade_id=10, authorization_id=auth.id, amount=eur("300.00")
+    )
+    second = await ledger.cancel_payment(
+        trade_id=10, authorization_id=auth.id, amount=eur("300.00")
+    )
+
+    assert first.id == second.id
+    assert buyer.reserved.amount == Decimal("0.00")
 
 
 # ── generate_receipt ──────────────────────────────────────────────────────────
