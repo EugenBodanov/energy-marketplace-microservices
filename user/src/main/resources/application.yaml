@@ -16,6 +16,11 @@ spring:
       ddl-auto: validate
     open-in-view: false
 
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+
 app:
   jwt:
     secret: ${APP_JWT_SECRET:local-development-user-service-jwt-secret}

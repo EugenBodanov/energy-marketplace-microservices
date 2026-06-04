@@ -176,6 +176,34 @@ services:
     ports:
       - "${BILLING_SERVICE_PORT:-8083}:8000"
 
+  api-gateway:
+    build:
+      context: ./api-gateway
+    image: energy-community-marketplace/api-gateway:local
+    container_name: energy-api-gateway
+    depends_on:
+      - user-service
+      - listing-service
+      #- trade-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=7080
+      # Containers use internal service DNS and default internal container ports!
+      - USER_SERVICE_URL=http://user-service:8080
+      - LISTING_SERVICE_URL=http://listing-service:8082
+      - TRADE_SERVICE_URL=http://trade-service:8083
+    ports:
+      - "${API_GATEWAY_PORT:-7080}:7080"
+
+  adminer:
+    image: adminer:latest
+    container_name: energy-db-viewer
+    ports:
+      - "9000:9000" # This maps the container to http://localhost:8081 on your laptop
+    depends_on:
+      - user-db
+      - listing-db
+
 volumes:
   user-db-data:
   listing-db-data:
