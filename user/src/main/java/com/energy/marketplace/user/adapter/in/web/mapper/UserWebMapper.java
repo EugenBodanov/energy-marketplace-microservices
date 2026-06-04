@@ -78,8 +78,8 @@ public class UserWebMapper {
 
         UserRole userRole = UserRole.valueOf(role.trim().toUpperCase());
 
-        if (userRole == UserRole.ADMIN && !isAdminRoleAllowed) {
-            throw new IllegalArgumentException("ADMIN role cannot be selected during registration");
+        if ((userRole == UserRole.ADMIN && !isAdminRoleAllowed) || userRole == UserRole.UNKNOWN) {
+            throw new IllegalArgumentException(userRole.name() + " role cannot be selected during registration");
         }
 
         return userRole;

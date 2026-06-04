@@ -261,6 +261,36 @@ public class HandleBillingSagaEventService implements HandleBillingSagaEventUseC
     }
 
     @Override
+    public void handleReceiptGenerationFailed(HandleReceiptGenerationFailedCommand command) {
+        try {
+            Trade trade = loadTradePort.loadTrade(command.tradeId());
+
+            transitionRecorder.transition(
+                    trade,
+                    TradeStateTransitionReasonCode.RECEIPT_GENERATION_FAILED_RETRY_LATER,
+                    trade::markReceiptRetryPending
+            );
+
+            saveTradePort.save(trade);
+
+            tradeStateUpdateNotifier.publishTradeStateUpdate(trade, TradeStateTransitionReasonCode.RECEIPT_GENERATION_FAILED_RETRY_LATER);
+
+        } catch (TradeSagaProcessingException exception) {
+            throw exception;
+        } catch (InvalidTradeStateException exception) {
+            throw new TradeSagaProcessingException(
+                    "Cannot handle RECEIPT_GENERATION_FAILED event because trade state transition is invalid",
+                    exception
+            );
+        } catch (RuntimeException exception) {
+            throw new TradeSagaProcessingException(
+                    "Failed to handle RECEIPT_GENERATION_FAILED event for tradeId=" + command.tradeId(),
+                    exception
+            );
+        }
+    }
+
+    @Override
     @Transactional
     public void handlePaymentSettlementFailed(HandlePaymentSettlementFailedCommand command) {
         try {

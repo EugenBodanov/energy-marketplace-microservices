@@ -3,7 +3,6 @@ package com.energy.marketplace.user.application.service;
 import com.energy.marketplace.user.application.command.UserValidationPurpose;
 import com.energy.marketplace.user.application.command.ValidateUserCommand;
 import com.energy.marketplace.user.application.port.out.LoadUserPort;
-import com.energy.marketplace.user.domain.exception.UserNotFoundException;
 import com.energy.marketplace.user.domain.model.User;
 import com.energy.marketplace.user.domain.valueObject.Email;
 import com.energy.marketplace.user.domain.valueObject.Id;
@@ -17,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -116,17 +114,21 @@ class ValidateUserServiceTest {
     }
 
     @Test
-    void throwsWhenUserDoesNotExist() {
+    void missingUserCannotParticipateInTrade() {
         ValidateUserService service = new ValidateUserService(loadUserPort);
 
         when(loadUserPort.loadById(new Id(1L))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.validateUser(new ValidateUserCommand(
+        var result = service.validateUser(new ValidateUserCommand(
                 new Id(1L),
                 UserValidationPurpose.PARTICIPATE_IN_TRADE
-        )))
-                .isInstanceOf(UserNotFoundException.class)
-                .hasMessage("User not found with id: 1");
+        ));
+
+        assertThat(result.valid()).isFalse();
+        assertThat(result.userId()).isEqualTo(new Id(1L));
+        assertThat(result.role()).isEqualTo(UserRole.UNKNOWN);
+        assertThat(result.status()).isEqualTo(UserStatus.UNKNOWN);
+        assertThat(result.message()).isEqualTo("User cannot participate in trade");
     }
 
     private User user(UserRole role, UserStatus status) {

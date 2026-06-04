@@ -58,4 +58,17 @@ public record ValidateUserResult(
                 message
         );
     }
+
+    public static ValidateUserResult invalid(
+            Id userId,
+            String message
+    ) {
+        return new ValidateUserResult(
+                userId,
+                false,
+                UserRole.UNKNOWN,
+                UserStatus.UNKNOWN,
+                message
+        );
+    }
 }

@@ -10,4 +10,5 @@ public interface HandleBillingSagaEventUseCase {
     void handlePaymentAuthorizationFailed(HandlePaymentAuthorizationFailedCommand command);
     void handleCancelPaymentFailed(HandleCancelPaymentFailed command);
     void handleCancelPaymentSuccess(HandleCancelPaymentSuccess command);
+    void handleReceiptGenerationFailed(HandleReceiptGenerationFailedCommand command);
 }

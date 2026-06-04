@@ -50,6 +50,14 @@ public class BillingSagaEventListener extends Listener{
                             )
                     );
                 }
+                case "RECEIPT_GENERATION_FAILED" -> {
+                    ReceiptGenerationFailedEventMessage eventMessage = jsonMapper.readValue(event, ReceiptGenerationFailedEventMessage.class);
+                    billingSagaEventService.handleReceiptGenerationFailed(
+                            billingSagaEventMapper.toCommand(
+                                    eventMessage
+                            )
+                    );
+                }
                 case "PAYMENT_AUTHORIZATION_FAILED" -> {
                     PaymentAuthorizationFailedEventMessage eventMessage = jsonMapper.readValue(event, PaymentAuthorizationFailedEventMessage.class);
                     billingSagaEventService.handlePaymentAuthorizationFailed(

@@ -21,7 +21,9 @@ public class RabbitMQConfig {
     // Routing keys for events
     public static final String LISTING_RESERVED_ROUTING_KEY = "listing.reserved.event";
     public static final String LISTING_RESERVATION_FAILED_ROUTING_KEY = "listing.reservation_failed.event";
-    public static final String LISTING_RELEASED_ROUTING_KEY = "listing.released.event";
+    public static final String LISTING_CLOSE_FAILED_ROUTING_KEY = "listing.close_failed.event";
+    public static final String LISTING_COMPENSATION_SUCCEEDED_ROUTING_KEY = "listing.compensation_succeeded.event";
+    public static final String LISTING_COMPENSATION_FAILED_ROUTING_KEY = "listing.compensation_failed.event";
     public static final String LISTING_CLOSED_ROUTING_KEY = "listing.closed.event";
 
     public static final String PAYMENT_AUTHORIZED_ROUTING_KEY = "payment.authorized.event";
@@ -30,6 +32,7 @@ public class RabbitMQConfig {
     public static final String PAYMENT_SETTLEMENT_FAILED_ROUTING_KEY = "payment.settlement_failed.event";
     public static final String PAYMENT_ROLLED_BACK_ROUTING_KEY = "payment.rolled_back.event";
     public static final String RECEIPT_GENERATED_ROUTING_KEY = "receipt.generated.event";
+    public static final String RECEIPT_GENERATION_FAILED_ROUTING_KEY = "receipt.generation_failed.event";
 
     @Bean
     public DirectExchange tradeExchange() {
@@ -58,8 +61,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingListingReleased(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_RELEASED_ROUTING_KEY);
+    public Binding bindingListingCloseFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_CLOSE_FAILED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingListingCompensationSucceeded(DirectExchange tradeExchange, Queue listingEventsQueue) {
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_COMPENSATION_SUCCEEDED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingListingCompensationFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_COMPENSATION_FAILED_ROUTING_KEY);
     }
 
     @Bean
@@ -96,6 +109,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding bindingReceiptGenerated(DirectExchange tradeExchange, Queue billingEventsQueue) {
         return BindingBuilder.bind(billingEventsQueue).to(tradeExchange).with(RECEIPT_GENERATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingReceiptGenerationFailed(DirectExchange tradeExchange, Queue billingEventsQueue) {
+        return BindingBuilder.bind(billingEventsQueue).to(tradeExchange).with(RECEIPT_GENERATION_FAILED_ROUTING_KEY);
     }
 
     @Bean

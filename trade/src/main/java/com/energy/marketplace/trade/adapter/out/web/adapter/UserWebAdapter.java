@@ -31,7 +31,7 @@ public class UserWebAdapter extends Adapter implements ValidateTradeParticipants
 
     private boolean validateUser(Long userId) {
         UserValidateResponse response = userRestClient.get()
-                .uri("/api/v1/users/{userId}/validate?purpose=PARTICIPATE_IN_TRADE", userId)
+                .uri("/users/{userId}/validate?purpose=PARTICIPATE_IN_TRADE", userId)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (request, clientResponse) -> {
                     throw new UserClientException(

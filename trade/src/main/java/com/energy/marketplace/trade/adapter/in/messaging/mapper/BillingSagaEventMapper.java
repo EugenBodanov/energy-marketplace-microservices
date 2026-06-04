@@ -40,6 +40,10 @@ public class BillingSagaEventMapper {
         );
     }
 
+    public HandleReceiptGenerationFailedCommand toCommand(ReceiptGenerationFailedEventMessage event){
+        return new HandleReceiptGenerationFailedCommand(event.tradeId());
+    }
+
     public HandlePaymentAuthorizationFailedCommand toCommand(PaymentAuthorizationFailedEventMessage event){
         return new HandlePaymentAuthorizationFailedCommand(event.tradeId(), event.paymentAuthorizationId(), event.occurredAt());
     }

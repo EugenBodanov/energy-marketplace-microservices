@@ -5,8 +5,9 @@ import com.energy.marketplace.user.application.command.UserValidationPurpose;
 import com.energy.marketplace.user.application.port.in.ValidateUserUseCase;
 import com.energy.marketplace.user.application.port.out.LoadUserPort;
 import com.energy.marketplace.user.application.result.ValidateUserResult;
-import com.energy.marketplace.user.domain.exception.UserNotFoundException;
 import com.energy.marketplace.user.domain.model.User;
+
+import java.util.Optional;
 
 public class ValidateUserService implements ValidateUserUseCase {
 
@@ -18,8 +19,16 @@ public class ValidateUserService implements ValidateUserUseCase {
 
     @Override
     public ValidateUserResult validateUser(ValidateUserCommand command) {
-        User user = loadUserPort.loadById(command.userId())
-                .orElseThrow(() -> new UserNotFoundException(command.userId()));
+        Optional<User> optionalUser = loadUserPort.loadById(command.userId());
+
+        if (optionalUser.isEmpty()) {
+            return ValidateUserResult.invalid(
+                    command.userId(),
+                    invalidReason(command.purpose())
+            );
+        }
+
+        User user = optionalUser.get();
 
         boolean valid = switch (command.purpose()) {
             case PARTICIPATE_IN_TRADE -> user.isActive();
