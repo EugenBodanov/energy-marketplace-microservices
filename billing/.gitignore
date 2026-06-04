@@ -1,0 +1,31 @@
+### Python ###
+__pycache__/
+*.py[cod]
+*$py.class
+
+### Test and coverage ###
+.pytest_cache/
+.coverage
+htmlcov/
+
+### Virtual environments ###
+.venv/
+venv/
+env/
+
+### Packaging ###
+build/
+dist/
+*.egg-info/
+
+### IDE ###
+.idea/
+.vscode/
+
+### Logs ###
+*.log
+
+### Environment ###
+.env
+.env.*
+!.env.example
