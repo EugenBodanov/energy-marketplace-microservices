@@ -18,6 +18,13 @@ class SqlReceiptRepository(ReceiptRepository):
         row = result.scalar_one_or_none()
         return self._to_domain(row) if row else None
 
+    async def find_by_id(self, receipt_id: int) -> Receipt | None:
+        result = await self._session.execute(
+            select(ReceiptORM).where(ReceiptORM.id == receipt_id)
+        )
+        row = result.scalar_one_or_none()
+        return self._to_domain(row) if row else None
+
     async def save(self, receipt: Receipt) -> Receipt:
         existing = await self.find_by_trade_id(receipt.trade_id)
         if existing:

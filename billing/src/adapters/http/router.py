@@ -25,13 +25,14 @@ class AccountResponse(BaseModel):
 
 
 class ReceiptResponse(BaseModel):
-    id: int
-    trade_id: int
-    buyer_id: int
-    seller_id: int
-    listing_id: int
-    amount: MoneyResponse
-    generated_at: datetime
+    tradeId: int
+    receiptId: int
+    buyerId: int
+    sellerId: int
+    listingId: int
+    currency: str
+    amount: Decimal
+    generatedAt: datetime
 
 
 @router.get("/accounts/{user_id}", response_model=AccountResponse)
@@ -49,18 +50,19 @@ async def get_account(user_id: int, session: AsyncSession = Depends(get_session)
     )
 
 
-@router.get("/receipts/{trade_id}", response_model=ReceiptResponse)
-async def get_receipt(trade_id: int, session: AsyncSession = Depends(get_session)):
+@router.get("/receipts/{receipt_id}", response_model=ReceiptResponse)
+async def get_receipt(receipt_id: int, session: AsyncSession = Depends(get_session)):
     repo = SqlReceiptRepository(session)
-    receipt = await repo.find_by_trade_id(trade_id)
+    receipt = await repo.find_by_id(receipt_id)
     if receipt is None:
-        raise HTTPException(status_code=404, detail=f"Receipt not found for trade {trade_id}")
+        raise HTTPException(status_code=404, detail=f"Receipt not found for id {receipt_id}")
     return ReceiptResponse(
-        id=receipt.id,
-        trade_id=receipt.trade_id,
-        buyer_id=receipt.buyer_id,
-        seller_id=receipt.seller_id,
-        listing_id=receipt.listing_id,
-        amount=MoneyResponse(amount=receipt.amount.amount, currency=receipt.amount.currency),
-        generated_at=receipt.generated_at,
+        tradeId=receipt.trade_id,
+        receiptId=receipt.id,
+        buyerId=receipt.buyer_id,
+        sellerId=receipt.seller_id,
+        listingId=receipt.listing_id,
+        currency=receipt.amount.currency,
+        amount=receipt.amount.amount,
+        generatedAt=receipt.generated_at,
     )

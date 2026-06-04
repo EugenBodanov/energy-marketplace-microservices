@@ -33,7 +33,7 @@ class EventPublisher:
         await exchange.publish(
             aio_pika.Message(
                 body=body,
-                content_type="application/json",
+                content_type="text/plain",
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
             ),
             routing_key=routing_key,
