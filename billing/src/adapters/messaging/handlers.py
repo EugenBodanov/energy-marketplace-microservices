@@ -175,6 +175,7 @@ async def handle_generate_receipt(
         )
     except Exception as e:
         logger.error(f"[GenerateReceipt] Error: {e}", exc_info=True)
+        await publisher.receipt_generation_failed(trade_id=trade_id)
         raise
 
 

@@ -133,6 +133,23 @@ class EventPublisher:
             },
         )
 
+    async def receipt_generation_failed(
+        self,
+        trade_id: int,
+    ) -> None:
+        """
+        Matches HandleReceiptGenerationFailedCommand (command/in/).
+        Fields: tradeId, occurredAt
+        """
+        await self._publish(
+            "receipt.generation_failed.event",
+            {
+                "eventType": "RECEIPT_GENERATION_FAILED",
+                "tradeId": trade_id,
+                "occurredAt": datetime.now(timezone.utc),
+            },
+        )
+
     async def cancel_payment_success(
         self,
         trade_id: int,
