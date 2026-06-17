@@ -1,0 +1,173 @@
+name: Bootstrap Google Cloud infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Run terraform plan or apply
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+      project_id:
+        description: Google Cloud project ID. Falls back to GCP_PROJECT_ID secret when empty.
+        required: false
+        type: string
+      region:
+        description: Cloud Run region
+        required: true
+        default: europe-west1
+        type: string
+      artifact_registry_location:
+        description: Artifact Registry location
+        required: true
+        default: europe-west1
+        type: string
+      artifact_registry_repository:
+        description: Docker Artifact Registry repository ID
+        required: true
+        default: energy-marketplace
+        type: string
+      environment:
+        description: Environment label and resource name suffix
+        required: true
+        default: dev
+        type: string
+      state_bucket_suffix:
+        description: Terraform state bucket suffix; bucket name is PROJECT_ID-suffix.
+        required: true
+        default: energy-marketplace-tfstate
+        type: string
+      state_bucket_location:
+        description: Terraform state bucket location
+        required: true
+        default: EU
+        type: string
+
+concurrency:
+  group: bootstrap-gcp-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TERRAFORM_DIR: infra/terraform/bootstrap
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
+  REGION: ${{ inputs.region }}
+  ARTIFACT_REGISTRY_LOCATION: ${{ inputs.artifact_registry_location }}
+  ARTIFACT_REGISTRY_REPOSITORY: ${{ inputs.artifact_registry_repository }}
+  ENVIRONMENT: ${{ inputs.environment }}
+  TF_STATE_BUCKET_SUFFIX: ${{ inputs.state_bucket_suffix }}
+  TF_STATE_BUCKET_LOCATION: ${{ inputs.state_bucket_location }}
+  GCP_BOOTSTRAP_CREDENTIALS_JSON: ${{ secrets.GCP_BOOTSTRAP_CREDENTIALS_JSON }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_DEPLOY_SERVICE_ACCOUNT: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+jobs:
+  bootstrap:
+    name: Terraform bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate bootstrap inputs
+        shell: bash
+        run: |
+          if [ -z "$PROJECT_ID" ]; then
+            echo "::error::Set workflow input project_id or GitHub secret GCP_PROJECT_ID."
+            exit 1
+          fi
+
+          if [ -z "$GCP_BOOTSTRAP_CREDENTIALS_JSON" ] && { [ -z "$GCP_WORKLOAD_IDENTITY_PROVIDER" ] || [ -z "$GCP_DEPLOY_SERVICE_ACCOUNT" ]; }; then
+            echo "::error::Set GCP_BOOTSTRAP_CREDENTIALS_JSON for first bootstrap, or set GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_DEPLOY_SERVICE_ACCOUNT for WIF."
+            exit 1
+          fi
+
+      - name: Authenticate with bootstrap credentials
+        if: env.GCP_BOOTSTRAP_CREDENTIALS_JSON != ''
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_BOOTSTRAP_CREDENTIALS_JSON }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Authenticate with Workload Identity Federation
+        if: env.GCP_BOOTSTRAP_CREDENTIALS_JSON == ''
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Prepare Terraform state backend
+        shell: bash
+        run: |
+          TF_STATE_BUCKET="${PROJECT_ID}-${TF_STATE_BUCKET_SUFFIX}"
+
+          gcloud services enable \
+            serviceusage.googleapis.com \
+            cloudresourcemanager.googleapis.com \
+            storage.googleapis.com \
+            --project "$PROJECT_ID" \
+            --quiet
+
+          if ! gcloud storage buckets describe "gs://${TF_STATE_BUCKET}" --project "$PROJECT_ID" >/dev/null 2>&1; then
+            gcloud storage buckets create "gs://${TF_STATE_BUCKET}" \
+              --project "$PROJECT_ID" \
+              --location "$TF_STATE_BUCKET_LOCATION" \
+              --uniform-bucket-level-access \
+              --quiet
+          fi
+
+          gcloud storage buckets update "gs://${TF_STATE_BUCKET}" --versioning --quiet
+          echo "TF_STATE_BUCKET=${TF_STATE_BUCKET}" >> "$GITHUB_ENV"
+
+      - name: Terraform init
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${TF_STATE_BUCKET}" \
+            -backend-config="prefix=infra/terraform/bootstrap"
+
+      - name: Terraform fmt
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform plan \
+            -out=bootstrap.tfplan \
+            -var="project_id=${PROJECT_ID}" \
+            -var="region=${REGION}" \
+            -var="artifact_registry_location=${ARTIFACT_REGISTRY_LOCATION}" \
+            -var="artifact_registry_repository=${ARTIFACT_REGISTRY_REPOSITORY}" \
+            -var="environment=${ENVIRONMENT}" \
+            -var="github_repository=${GITHUB_REPOSITORY}"
+
+      - name: Terraform apply
+        if: inputs.mode == 'apply'
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: terraform apply -auto-approve bootstrap.tfplan
