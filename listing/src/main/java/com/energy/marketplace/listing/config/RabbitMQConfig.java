@@ -2,14 +2,9 @@ package com.energy.marketplace.listing.config;
 
 import com.energy.marketplace.shared.messaging.ListingSagaMessaging;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.support.converter.DefaultJacksonJavaTypeMapper;
-import org.springframework.amqp.support.converter.JacksonJavaTypeMapper;
-import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import java.util.Collections;
 
 @Configuration
 public class RabbitMQConfig {
@@ -19,12 +14,6 @@ public class RabbitMQConfig {
 
     @Value("${listing.events.queue:listing.events.queue}")
     private String listingEventsQueueName;
-
-    // --- ADD THIS BEAN TO AUTOMATICALLY HANDLE CONVERSION FOR ALL EVENTS ---
-    @Bean
-    public MessageConverter jsonMessageConverter() {
-        return new JacksonJsonMessageConverter();
-    }
 
     @Bean
     public DirectExchange tradeExchange() {

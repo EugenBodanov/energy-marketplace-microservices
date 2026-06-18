@@ -6,8 +6,14 @@ import com.energy.marketplace.listing.application.event.*;
 import com.energy.marketplace.listing.application.port.out.PublishListingEventPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
@@ -15,11 +21,12 @@ import org.springframework.stereotype.Component;
 public class ListingEventPublisher implements PublishListingEventPort {
 
     private final RabbitTemplate rabbitTemplate;
+    private final JsonMapper jsonMapper;
 
     @Override
     public void publishListingCreated(ListingCreatedEvent event) {
         log.info("Publishing ListingCreatedEvent for listing {}", event.listingId());
-        rabbitTemplate.convertAndSend(ListingSagaMessaging.EXCHANGE, ListingSagaMessaging.LISTING_CREATED_EVENT, event);
+        sendJson(ListingSagaMessaging.LISTING_CREATED_EVENT, event);
     }
 
     @Override
@@ -31,8 +38,7 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.tradeId(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_RESERVED_EVENT,
                 message
         );
@@ -49,8 +55,7 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.reason(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_RESERVATION_FAILED_EVENT,
                 message
         );
@@ -66,8 +71,7 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.tradeId(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_COMPENSATION_SUCCEEDED_EVENT,
                 message
         );
@@ -82,8 +86,7 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.tradeId(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_CLOSED_EVENT,
                 message
         );
@@ -100,8 +103,7 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.reason(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_CLOSE_FAILED_EVENT,
                 message
         );
@@ -117,8 +119,7 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.tradeId(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_COMPENSATION_SUCCEEDED_EVENT,
                 message
         );
@@ -135,11 +136,23 @@ public class ListingEventPublisher implements PublishListingEventPort {
                 event.reason(),
                 event.timestamp()
         );
-        rabbitTemplate.convertAndSend(
-                ListingSagaMessaging.EXCHANGE,
+        sendJson(
                 ListingSagaMessaging.LISTING_COMPENSATION_FAILED_EVENT,
                 message
         );
+    }
+
+    private void sendJson(String routingKey, Object payload) {
+        try {
+            Message message = MessageBuilder
+                    .withBody(jsonMapper.writeValueAsString(payload).getBytes(StandardCharsets.UTF_8))
+                    .setContentType("application/json")
+                    .setContentEncoding(StandardCharsets.UTF_8.name())
+                    .build();
+            rabbitTemplate.send(ListingSagaMessaging.EXCHANGE, routingKey, message);
+        } catch (JacksonException exception) {
+            throw new IllegalStateException("Failed to serialize listing saga event", exception);
+        }
     }
 }
 

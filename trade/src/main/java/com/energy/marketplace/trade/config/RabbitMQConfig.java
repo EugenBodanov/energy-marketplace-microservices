@@ -2,8 +2,6 @@ package com.energy.marketplace.trade.config;
 
 import com.energy.marketplace.shared.messaging.ListingSagaMessaging;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -108,8 +106,4 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(billingEventsQueue).to(tradeExchange).with(RECEIPT_GENERATION_FAILED_ROUTING_KEY);
     }
 
-    @Bean
-    public MessageConverter jsonMessageConverter() {
-        return new JacksonJsonMessageConverter();
-    }
 }

@@ -79,6 +79,15 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
       RABBITMQ_ERLANG_COOKIE: "ENERGY_MARKETPLACE_SECRET_COOKIE_2026"
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        chown -R rabbitmq:rabbitmq /var/lib/rabbitmq
+        if [ -f /var/lib/rabbitmq/.erlang.cookie ]; then
+          chmod 600 /var/lib/rabbitmq/.erlang.cookie
+        fi
+        exec su-exec rabbitmq docker-entrypoint.sh rabbitmq-server
     ports:
       - "${RABBITMQ_PORT:-5672}:5672"
       - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
@@ -153,6 +162,7 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
       USER_SERVICE_URL: http://user-service:8080
+      BILLING_SERVICE_URL: http://billing-service:8000
     ports:
       - "${TRADE_SERVICE_PORT:-8081}:8081"
 

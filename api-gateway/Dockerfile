@@ -23,12 +23,12 @@ WORKDIR /app
 # Copy JAR from builder stage
 COPY --from=builder /build/target/api-gateway-*.jar api-gateway.jar
 
-# Expose port
-EXPOSE 8080
+# Expose the default local port and the Docker Compose port.
+EXPOSE 8000 7080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${SERVER_PORT:-8000}/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "api-gateway.jar"]
