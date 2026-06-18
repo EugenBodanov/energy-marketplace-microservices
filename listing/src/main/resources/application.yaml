@@ -19,6 +19,12 @@ spring:
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
+listing:
+  commands:
+    queue: listing.commands.queue
+  events:
+    queue: listing.events.queue
+
 server:
   port: ${SERVER_PORT:8082}
 

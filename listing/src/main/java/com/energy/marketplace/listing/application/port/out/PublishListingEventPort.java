@@ -8,5 +8,7 @@ public interface PublishListingEventPort {
     void publishListingReservationFailed(ListingReservationFailedEvent event);
     void publishListingReleased(ListingReleasedEvent event);
     void publishListingClosed(ListingClosedEvent event);
+    void publishListingCloseFailed(ListingCloseFailedEvent event);
+    void publishListingCancelled(ListingCancelledEvent event);
+    void publishListingCompensationFailed(ListingCompensationFailedEvent event);
 }
-

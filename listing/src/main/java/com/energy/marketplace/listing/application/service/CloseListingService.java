@@ -1,6 +1,7 @@
 package com.energy.marketplace.listing.application.service;
 
 import com.energy.marketplace.listing.application.command.CloseListingCommand;
+import com.energy.marketplace.listing.application.event.ListingCloseFailedEvent;
 import com.energy.marketplace.listing.application.event.ListingClosedEvent;
 import com.energy.marketplace.listing.application.port.in.CloseListingUseCase;
 import com.energy.marketplace.listing.application.port.out.LoadListingPort;
@@ -49,6 +50,9 @@ public class CloseListingService implements CloseListingUseCase {
         } catch (ListingNotFoundException | ListingInvalidStateException e) {
             String errorMessage = e.getMessage();
             log.warn("Failed to close listing {}: {}", command.listingId(), errorMessage);
+            publishListingEventPort.publishListingCloseFailed(
+                    ListingCloseFailedEvent.now(command.listingId(), command.tradeId(), errorMessage)
+            );
             return ReservationResult.failure(command.listingId(), errorMessage);
         }
     }

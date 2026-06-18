@@ -9,7 +9,7 @@ public class ListingSagaEventMapper {
 
     public HandleListingReservedCommand toCommand(ListingReservedEventMessage message) {
         return new HandleListingReservedCommand(message.tradeId(), message.listingId(),
-                message.reservationId(), message.occurredAt());
+                null, message.occurredAt());
     }
 
     public HandleListingClosedCommand toCommand(ListingClosedEventMessage message) {

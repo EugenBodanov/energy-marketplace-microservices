@@ -1,21 +1,22 @@
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /workspace
 
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
+COPY messaging-contracts messaging-contracts/
+RUN mvn -f messaging-contracts/pom.xml clean install -DskipTests
 
-RUN chmod +x mvnw && ./mvnw -DskipTests dependency:go-offline
+COPY trade/pom.xml trade/pom.xml
+RUN mvn -f trade/pom.xml -DskipTests dependency:go-offline
 
-COPY src src
+COPY trade/src trade/src
 
-RUN ./mvnw -DskipTests package
+RUN mvn -f trade/pom.xml -DskipTests package
 
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-COPY --from=build /workspace/target/*.jar app.jar
+COPY --from=build /workspace/trade/target/*.jar app.jar
 
 EXPOSE 8081
 

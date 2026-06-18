@@ -53,7 +53,7 @@ gateway:
     listing-service:
       url: "${LISTING_SERVICE_URL:-http://localhost:8082}"
     trade-service:
-      url: "${TRADE_SERVICE_URL:-http://localhost:8083}"
+      url: "${TRADE_SERVICE_URL:-http://localhost:8081}"
 
 ---
 # Docker Compose Profile
@@ -65,7 +65,7 @@ spring:
 gateway:
   services:
     user-service:
-      url: "${USER_SERVICE_URL:-http://user-serivce:8080}"
+      url: "${USER_SERVICE_URL:-http://user-service:8080}"
     listing-service:
       url: "${LISTING_SERVICE_URL:-http://listing-service:8082}"
     trade-service:

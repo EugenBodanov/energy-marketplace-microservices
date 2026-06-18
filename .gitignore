@@ -12,6 +12,14 @@ Thumbs.db
 ### Logs ###
 *.log
 
+### Terraform ###
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
 ### Root environment ###
 /.env
 /.env.*
