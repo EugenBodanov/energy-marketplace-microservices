@@ -1,0 +1,66 @@
+flowchart TB
+    Anna["Anna<br/>(prosumer)"]
+    Bob["Bob<br/>(consumer)"]
+
+    Gateway["API Gateway<br/><br/>single entry point<br/>path-based routing"]
+
+    UserService["User Service<br/><br/>POST /users/register<br/>POST /users/login<br/>GET /users/:id/validate"]
+
+    TradeService["Trade Service<br/><br/>POST /trades<br/>GET /trades/:id<br/>GET /trades/:id/receipt<br/><br/>Saga orchestrator<br/>owns trade state/history"]
+
+    ListingService["Listing Service<br/><br/>REST:<br/>POST /listings<br/>GET /listings<br/><br/>MQ commands:<br/>ReserveListing<br/>CloseListing<br/>CancelListing"]
+
+    BillingService["Billing Service<br/><br/>MQ commands:<br/>AuthorizePayment<br/>SettlePayment<br/>CancelPayment<br/>GenerateReceipt<br/><br/>authorizes payments<br/>settles payments<br/>generates receipts"]
+
+    Broker["RabbitMQ<br/><br/>trade.saga.exchange"]
+
+    UsersDB[("Users DB")]
+    TradesDB[("Trades DB")]
+    ListingsDB[("Listings DB")]
+    BillingDB[("Billing DB")]
+
+    Anna -- "REST" --> Gateway
+    Bob -- "REST" --> Gateway
+
+    Gateway -- "REST<br/>/users/**" --> UserService
+    Gateway -- "REST<br/>/listings/**" --> ListingService
+    Gateway -- "REST<br/>/trades/**" --> TradeService
+
+    TradeService -- "sync REST<br/>validate buyer/seller<br/>GET /users/:id/validate" --> UserService
+
+    TradeService -- "async commands<br/>listing.reserve.command<br/>listing.close.command<br/>listing.cancel.command" --> Broker
+    Broker -- "async commands<br/>ReserveListing<br/>CloseListing<br/>CancelListing" --> ListingService
+
+    ListingService -- "async events<br/>LISTING_RESERVED<br/>LISTING_RESERVATION_FAILED<br/>LISTING_CLOSED<br/>LISTING_CLOSE_FAILED<br/>LISTING_COMPENSATION_SUCCEEDED<br/>LISTING_COMPENSATION_FAILED" --> Broker
+    Broker -- "async listing events" --> TradeService
+
+    TradeService -- "async commands<br/>billing.authorize.command<br/>billing.settle.command<br/>billing.cancel_payment.command<br/>billing.generate_receipt.command" --> Broker
+    Broker -- "async commands<br/>AuthorizePayment<br/>SettlePayment<br/>CancelPayment<br/>GenerateReceipt" --> BillingService
+
+    BillingService -- "async events<br/>PAYMENT_AUTHORIZED<br/>PAYMENT_AUTHORIZATION_FAILED<br/>PAYMENT_SETTLED<br/>PAYMENT_SETTLEMENT_FAILED<br/>CANCEL_PAYMENT_SUCCESS<br/>CANCEL_PAYMENT_FAILED<br/>RECEIPT_GENERATED<br/>RECEIPT_GENERATION_FAILED" --> Broker
+    Broker -- "async billing events" --> TradeService
+
+    TradeService -- "REST<br/>get receipt by receiptId" --> BillingService
+
+    UserService --- UsersDB
+    TradeService --- TradesDB
+    ListingService --- ListingsDB
+    BillingService --- BillingDB
+
+    classDef gateway fill:#f4f1e8,stroke:#c9c2b0,stroke-width:1px,color:#222;
+    classDef user fill:#eee8ff,stroke:#b8a9f0,stroke-width:1px,color:#322080;
+    classDef trade fill:#e3f2ff,stroke:#8bbce8,stroke-width:1px,color:#064f88;
+    classDef listing fill:#e1f7ef,stroke:#91cfb8,stroke-width:1px,color:#006747;
+    classDef billing fill:#fff0e8,stroke:#e3a58d,stroke-width:1px,color:#8a2d18;
+    classDef broker fill:#fff8dc,stroke:#d6b656,stroke-width:1px,color:#4a3b00;
+    classDef db fill:#f4f1e8,stroke:#c9c2b0,stroke-width:1px,color:#222;
+    classDef actor fill:#f4f1e8,stroke:#c9c2b0,stroke-width:1px,color:#222;
+
+    class Gateway gateway;
+    class UserService user;
+    class TradeService trade;
+    class ListingService listing;
+    class BillingService billing;
+    class Broker broker;
+    class UsersDB,TradesDB,ListingsDB,BillingDB db;
+    class Anna,Bob actor;
