@@ -13,11 +13,12 @@ public class ListingMessagingMapper {
 
     public ReserveListingEvent toEvent(ReserveListingCommand command) {
         return new ReserveListingEvent(
+                "LISTING_RESERVE",
                 command.tradeId(),
                 command.listingId(),
                 command.buyerId(),
                 command.sellerId(),
-                command.expectedAmount().amount(),
+                command.expectedAmount().amount().longValue(),
                 command.expectedAmount().currencyCode(),
                 command.requestedAt()
         );
@@ -25,6 +26,7 @@ public class ListingMessagingMapper {
 
     public CloseListingEvent toEvent(CloseListingCommand command) {
         return new CloseListingEvent(
+                "LISTING_CLOSE",
                 command.tradeId(),
                 command.listingId(),
                 command.requestedAt()
@@ -33,6 +35,7 @@ public class ListingMessagingMapper {
 
     public CancelListingEvent toEvent(CancelListingCommand command) {
         return new CancelListingEvent(
+                "LISTING_CANCEL",
                 command.tradeId(),
                 command.listingId(),
                 command.requestedAt()

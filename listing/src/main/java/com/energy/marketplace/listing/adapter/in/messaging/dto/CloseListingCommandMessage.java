@@ -1,12 +1,12 @@
-package com.energy.marketplace.trade.adapter.in.messaging.dto;
+package com.energy.marketplace.listing.adapter.in.messaging.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Instant;
 
-public record ListingCompensationSucceededEventMessage(
+public record CloseListingCommandMessage(
         @JsonProperty("eventType")
         @NotNull(message = "Event type must not be null")
         String eventType,

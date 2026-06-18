@@ -27,9 +27,11 @@
     </properties>
 
     <modules>
+        <module>messaging-contracts</module>
         <module>api-gateway</module>
         <module>user</module>
         <module>listing</module>
+        <module>trade</module>
     </modules>
 
     <dependencyManagement>

@@ -37,7 +37,7 @@ public class UserController {
         return userWebMapper.toResponse(result);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/{userId}:\\d+")
     public UserResponse getUser(@PathVariable("userId") Long userId) {
         var command = userWebMapper.toGetUserCommand(userId);
         var result = getUserUseCase.getUser(command);

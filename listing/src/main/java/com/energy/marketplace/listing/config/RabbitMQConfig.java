@@ -1,100 +1,115 @@
 package com.energy.marketplace.listing.config;
 
+import com.energy.marketplace.shared.messaging.ListingSagaMessaging;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.support.converter.DefaultJacksonJavaTypeMapper;
+import org.springframework.amqp.support.converter.JacksonJavaTypeMapper;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.util.Collections;
 
 @Configuration
 public class RabbitMQConfig {
 
-    // Exchange
-    public static final String EXCHANGE = "trade.saga.exchange";
+    @Value("${listing.commands.queue:listing.commands.queue}")
+    private String listingCommandsQueueName;
 
-    // Queues
-    public static final String LISTING_COMMANDS_QUEUE = "listing.commands.queue";
-    public static final String LISTING_EVENTS_QUEUE = "listing.events.queue";
+    @Value("${listing.events.queue:listing.events.queue}")
+    private String listingEventsQueueName;
 
-    // Routing keys
-    public static final String RESERVE_LISTING_ROUTING_KEY = "listing.reserve.command";
-    public static final String RELEASE_LISTING_ROUTING_KEY = "listing.release.command";
-    public static final String CLOSE_LISTING_ROUTING_KEY = "listing.close.command";
-    public static final String LISTING_CREATED_ROUTING_KEY = "listing.created.event";
-    public static final String LISTING_RESERVED_ROUTING_KEY = "listing.reserved.event";
-    public static final String LISTING_RESERVATION_FAILED_ROUTING_KEY = "listing.reservation_failed.event";
-    public static final String LISTING_RELEASED_ROUTING_KEY = "listing.released.event";
-    public static final String LISTING_CLOSED_ROUTING_KEY = "listing.closed.event";
+    // --- ADD THIS BEAN TO AUTOMATICALLY HANDLE CONVERSION FOR ALL EVENTS ---
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new JacksonJsonMessageConverter();
+    }
 
     @Bean
     public DirectExchange tradeExchange() {
-        return new DirectExchange(EXCHANGE, true, false);
+        return new DirectExchange(ListingSagaMessaging.EXCHANGE, true, false);
     }
 
     @Bean
     public Queue listingCommandsQueue() {
-        return new Queue(LISTING_COMMANDS_QUEUE, true);
+        return new Queue(listingCommandsQueueName, true);
     }
 
     @Bean
     public Queue listingEventsQueue() {
-        return new Queue(LISTING_EVENTS_QUEUE, true);
+        return new Queue(listingEventsQueueName, true);
     }
 
-    // Bindings for commands
+    // ==================== COMMAND BINDINGS ====================
     @Bean
     public Binding bindingReserveCommand() {
         return BindingBuilder.bind(listingCommandsQueue())
                 .to(tradeExchange())
-                .with(RESERVE_LISTING_ROUTING_KEY);
-    }
-
-    @Bean
-    public Binding bindingReleaseCommand() {
-        return BindingBuilder.bind(listingCommandsQueue())
-                .to(tradeExchange())
-                .with(RELEASE_LISTING_ROUTING_KEY);
+                .with(ListingSagaMessaging.RESERVE_LISTING_COMMAND);
     }
 
     @Bean
     public Binding bindingCloseCommand() {
         return BindingBuilder.bind(listingCommandsQueue())
                 .to(tradeExchange())
-                .with(CLOSE_LISTING_ROUTING_KEY);
+                .with(ListingSagaMessaging.CLOSE_LISTING_COMMAND);
     }
 
-    // Bindings for events (if this service needs to listen to its own events for processing)
+    @Bean
+    public Binding bindingCancelCommand() {
+        return BindingBuilder.bind(listingCommandsQueue())
+                .to(tradeExchange())
+                .with(ListingSagaMessaging.CANCEL_LISTING_COMMAND);
+    }
+
+    // ==================== EVENT BINDINGS ====================
     @Bean
     public Binding bindingListingCreated() {
         return BindingBuilder.bind(listingEventsQueue())
                 .to(tradeExchange())
-                .with(LISTING_CREATED_ROUTING_KEY);
+                .with("listing.created.event");
     }
 
     @Bean
     public Binding bindingListingReserved() {
         return BindingBuilder.bind(listingEventsQueue())
                 .to(tradeExchange())
-                .with(LISTING_RESERVED_ROUTING_KEY);
+                .with(ListingSagaMessaging.LISTING_RESERVED_EVENT);
     }
 
     @Bean
     public Binding bindingListingReservationFailed() {
         return BindingBuilder.bind(listingEventsQueue())
                 .to(tradeExchange())
-                .with(LISTING_RESERVATION_FAILED_ROUTING_KEY);
-    }
-
-    @Bean
-    public Binding bindingListingReleased() {
-        return BindingBuilder.bind(listingEventsQueue())
-                .to(tradeExchange())
-                .with(LISTING_RELEASED_ROUTING_KEY);
+                .with(ListingSagaMessaging.LISTING_RESERVATION_FAILED_EVENT);
     }
 
     @Bean
     public Binding bindingListingClosed() {
         return BindingBuilder.bind(listingEventsQueue())
                 .to(tradeExchange())
-                .with(LISTING_CLOSED_ROUTING_KEY);
+                .with(ListingSagaMessaging.LISTING_CLOSED_EVENT);
+    }
+
+    @Bean
+    public Binding bindingListingCloseFailed() {
+        return BindingBuilder.bind(listingEventsQueue())
+                .to(tradeExchange())
+                .with(ListingSagaMessaging.LISTING_CLOSE_FAILED_EVENT);
+    }
+
+    @Bean
+    public Binding bindingListingCompensationSucceeded() {
+        return BindingBuilder.bind(listingEventsQueue())
+                .to(tradeExchange())
+                .with(ListingSagaMessaging.LISTING_COMPENSATION_SUCCEEDED_EVENT);
+    }
+
+    @Bean
+    public Binding bindingListingCompensationFailed() {
+        return BindingBuilder.bind(listingEventsQueue())
+                .to(tradeExchange())
+                .with(ListingSagaMessaging.LISTING_COMPENSATION_FAILED_EVENT);
     }
 }
-

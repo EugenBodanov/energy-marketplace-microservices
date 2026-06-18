@@ -1,5 +1,6 @@
 package com.energy.marketplace.trade.config;
 
+import com.energy.marketplace.shared.messaging.ListingSagaMessaging;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -10,22 +11,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String EXCHANGE = "trade.saga.exchange";
-
     @Value("${trade.listing-events.queue:trade.listing.events.queue}")
     private String listingEventsQueueName;
 
     @Value("${trade.billing-events.queue:trade.billing.events.queue}")
     private String billingEventsQueueName;
 
-    // Routing keys for events
-    public static final String LISTING_RESERVED_ROUTING_KEY = "listing.reserved.event";
-    public static final String LISTING_RESERVATION_FAILED_ROUTING_KEY = "listing.reservation_failed.event";
-    public static final String LISTING_CLOSE_FAILED_ROUTING_KEY = "listing.close_failed.event";
-    public static final String LISTING_COMPENSATION_SUCCEEDED_ROUTING_KEY = "listing.compensation_succeeded.event";
-    public static final String LISTING_COMPENSATION_FAILED_ROUTING_KEY = "listing.compensation_failed.event";
-    public static final String LISTING_CLOSED_ROUTING_KEY = "listing.closed.event";
-
+    // Routing keys for billing events
     public static final String PAYMENT_AUTHORIZED_ROUTING_KEY = "payment.authorized.event";
     public static final String PAYMENT_AUTHORIZATION_FAILED_ROUTING_KEY = "payment.authorization_failed.event";
     public static final String PAYMENT_SETTLED_ROUTING_KEY = "payment.settled.event";
@@ -36,7 +28,7 @@ public class RabbitMQConfig {
 
     @Bean
     public DirectExchange tradeExchange() {
-        return new DirectExchange(EXCHANGE, true, false);
+        return new DirectExchange(ListingSagaMessaging.EXCHANGE, true, false);
     }
 
     @Bean
@@ -49,38 +41,38 @@ public class RabbitMQConfig {
         return new Queue(billingEventsQueueName, true);
     }
 
-    // Bindings for listing events
+    // ==================== LISTING EVENT BINDINGS ====================
     @Bean
     public Binding bindingListingReserved(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_RESERVED_ROUTING_KEY);
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(ListingSagaMessaging.LISTING_RESERVED_EVENT);
     }
 
     @Bean
     public Binding bindingListingReservationFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_RESERVATION_FAILED_ROUTING_KEY);
-    }
-
-    @Bean
-    public Binding bindingListingCloseFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_CLOSE_FAILED_ROUTING_KEY);
-    }
-
-    @Bean
-    public Binding bindingListingCompensationSucceeded(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_COMPENSATION_SUCCEEDED_ROUTING_KEY);
-    }
-
-    @Bean
-    public Binding bindingListingCompensationFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_COMPENSATION_FAILED_ROUTING_KEY);
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(ListingSagaMessaging.LISTING_RESERVATION_FAILED_EVENT);
     }
 
     @Bean
     public Binding bindingListingClosed(DirectExchange tradeExchange, Queue listingEventsQueue) {
-        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(LISTING_CLOSED_ROUTING_KEY);
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(ListingSagaMessaging.LISTING_CLOSED_EVENT);
     }
 
-    // Bindings for billing events
+    @Bean
+    public Binding bindingListingCloseFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(ListingSagaMessaging.LISTING_CLOSE_FAILED_EVENT);
+    }
+
+    @Bean
+    public Binding bindingListingCompensationSucceeded(DirectExchange tradeExchange, Queue listingEventsQueue) {
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(ListingSagaMessaging.LISTING_COMPENSATION_SUCCEEDED_EVENT);
+    }
+
+    @Bean
+    public Binding bindingListingCompensationFailed(DirectExchange tradeExchange, Queue listingEventsQueue) {
+        return BindingBuilder.bind(listingEventsQueue).to(tradeExchange).with(ListingSagaMessaging.LISTING_COMPENSATION_FAILED_EVENT);
+    }
+
+    // ==================== BILLING EVENT BINDINGS ====================
     @Bean
     public Binding bindingPaymentAuthorized(DirectExchange tradeExchange, Queue billingEventsQueue) {
         return BindingBuilder.bind(billingEventsQueue).to(tradeExchange).with(PAYMENT_AUTHORIZED_ROUTING_KEY);
