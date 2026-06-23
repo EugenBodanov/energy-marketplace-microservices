@@ -22,7 +22,7 @@ public class OpenApiConfig {
     public GroupedOpenApi userServiceApiGroup() {
         return GroupedOpenApi.builder()
                 .group("user-service")
-                .pathsToMatch("/api/v1/users/**")
+                .pathsToMatch("/users", "/users/**")
                 .build();
     }
 }

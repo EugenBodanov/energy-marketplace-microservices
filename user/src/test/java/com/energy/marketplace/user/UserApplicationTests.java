@@ -100,10 +100,10 @@ class UserApplicationTests {
         mockMvc.perform(get("/v3/api-docs/user-service"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info.title").value("User Service API"))
-                .andExpect(jsonPath("$.paths['/api/v1/users/register'].post.operationId").value("register"))
-                .andExpect(jsonPath("$.paths['/api/v1/users/register'].post.requestBody.required").value(true))
-                .andExpect(jsonPath("$.paths['/api/v1/users/{userId}/validate'].get.parameters[1].name").value("purpose"))
-                .andExpect(jsonPath("$.paths['/api/v1/users/{userId}/validate'].get.parameters[1].schema.default")
+                .andExpect(jsonPath("$.paths['/users/register'].post.operationId").value("register"))
+                .andExpect(jsonPath("$.paths['/users/register'].post.requestBody.required").value(true))
+                .andExpect(jsonPath("$.paths['/users/{userId}/validate'].get.parameters[1].name").value("purpose"))
+                .andExpect(jsonPath("$.paths['/users/{userId}/validate'].get.parameters[1].schema.default")
                         .value("PARTICIPATE_IN_TRADE"))
                 .andExpect(jsonPath("$.components.schemas.RegisterUserRequest.properties.email.format").value("email"));
     }
