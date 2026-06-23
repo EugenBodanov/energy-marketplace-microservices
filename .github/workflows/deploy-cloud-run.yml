@@ -78,8 +78,7 @@ jobs:
 
       - name: Run Java tests
         if: matrix.runtime == 'java'
-        working-directory: ${{ matrix.service_path }}
-        run: mvn -B test
+        run: mvn -B -pl "${{ matrix.service_path }}" -am test
 
       - name: Run Python tests
         if: matrix.runtime == 'python'
@@ -149,9 +148,17 @@ jobs:
             ["billing-service"]="billing"
           )
 
+          declare -A SERVICE_CONTEXTS=(
+            ["api-gateway"]="api-gateway"
+            ["user-service"]="user"
+            ["listing-service"]="."
+            ["trade-service"]="."
+            ["billing-service"]="billing"
+          )
+
           for service in api-gateway user-service listing-service trade-service billing-service; do
             image="$IMAGE_PREFIX/$service:$GITHUB_SHA"
-            docker build -t "$image" "./${SERVICE_PATHS[$service]}"
+            docker build -t "$image" -f "./${SERVICE_PATHS[$service]}/Dockerfile" "${SERVICE_CONTEXTS[$service]}"
             docker push "$image"
           done
 
