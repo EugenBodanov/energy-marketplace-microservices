@@ -3,6 +3,8 @@ package com.energy.marketplace.trade.adapter.out.persistence.entity;
 import com.energy.marketplace.trade.domain.model.TradeStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 
@@ -28,14 +30,15 @@ public class TradeEntity {
     @Column(nullable = false)
     private Long listingId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 3)
     private String currencyCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = false, length = 64)
     private TradeStatus status;
 
     private Long paymentAuthorizationId;

@@ -268,7 +268,7 @@ resource "google_cloud_run_v2_service" "trade" {
       }
 
       env {
-        name  = "BILLING_SERVICE_BASE_URL"
+        name  = "BILLING_SERVICE_URL"
         value = google_cloud_run_v2_service.billing.uri
       }
 

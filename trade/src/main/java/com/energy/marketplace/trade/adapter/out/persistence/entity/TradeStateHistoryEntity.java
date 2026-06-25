@@ -4,6 +4,8 @@ import com.energy.marketplace.trade.domain.model.TradeStatus;
 import com.energy.marketplace.trade.domain.valueObject.TradeStateTransitionReasonCode;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -24,20 +26,24 @@ public class TradeStateHistoryEntity {
     private Long tradeId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = true, length = 64)
     private TradeStatus fromStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = false, length = 64)
     private TradeStatus toStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = false, length = 128)
     private TradeStateTransitionReasonCode reasonCode;
 
     @Column(columnDefinition = "TEXT")
     private String reasonDetails;
 
+    @JdbcTypeCode(SqlTypes.TIMESTAMP)
     @Column(nullable = false)
     private Instant changedAt;
 
