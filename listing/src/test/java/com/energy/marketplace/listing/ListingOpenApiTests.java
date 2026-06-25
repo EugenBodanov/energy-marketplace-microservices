@@ -57,7 +57,7 @@ class ListingOpenApiTests {
 
     @Test
     void exposesListingServiceOpenApiDocumentation() throws Exception {
-        mockMvc.perform(get("/v3/api-docs/listing-service"))
+        mockMvc.perform(get("/listings/v3/api-docs/listing-service"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info.title").value("Listing Service API"))
                 .andExpect(jsonPath("$.paths['/listings'].post.operationId").value("createListing"))

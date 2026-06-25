@@ -97,7 +97,7 @@ class UserApplicationTests {
 
     @Test
     void exposesOpenApiDocumentation() throws Exception {
-        mockMvc.perform(get("/v3/api-docs/user-service"))
+        mockMvc.perform(get("/users/v3/api-docs/user-service"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info.title").value("User Service API"))
                 .andExpect(jsonPath("$.paths['/users/register'].post.operationId").value("register"))
