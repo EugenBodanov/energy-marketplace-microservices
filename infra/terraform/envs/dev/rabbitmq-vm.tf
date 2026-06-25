@@ -67,6 +67,9 @@ if ! grep -q "/var/lib/rabbitmq" /etc/fstab; then
 fi
 
 mount -a
+chown -R 999:999 /var/lib/rabbitmq
+chmod 700 /var/lib/rabbitmq
+
 docker pull ${var.rabbitmq_image}
 docker rm -f rabbitmq || true
 docker run -d --name rabbitmq --restart unless-stopped \
