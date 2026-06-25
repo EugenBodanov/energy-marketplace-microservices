@@ -35,9 +35,9 @@ logging:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /listings/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /listings/swagger-ui.html
     operations-sorter: method
     tags-sorter: alpha
 
