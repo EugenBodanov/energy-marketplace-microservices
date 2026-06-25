@@ -12,6 +12,10 @@ Thumbs.db
 ### Logs ###
 *.log
 
+### Node / Saga Lab ###
+node_modules/
+dist/
+
 ### Terraform ###
 **/.terraform/
 *.tfstate

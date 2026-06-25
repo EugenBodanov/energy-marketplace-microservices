@@ -23,11 +23,12 @@ async def lifespan(app: FastAPI):
 
     # Connect to RabbitMQ and start consuming commands
     connection = await aio_pika.connect_robust(settings.rabbitmq_url)
-    await start_consumer(connection)
+    app.state.billing_consumer = await start_consumer(connection)
     logger.info("RabbitMQ consumer started")
 
     yield
 
+    await app.state.billing_consumer.stop()
     await connection.close()
     await engine.dispose()
     logger.info("Billing service shut down")

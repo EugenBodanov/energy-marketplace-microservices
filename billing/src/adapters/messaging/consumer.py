@@ -1,7 +1,8 @@
 import logging
+from dataclasses import dataclass
 
 import aio_pika
-from aio_pika.abc import AbstractIncomingMessage
+from aio_pika.abc import AbstractIncomingMessage, AbstractQueue, AbstractRobustChannel
 
 from src.adapters.db.session import AsyncSessionFactory
 from src.adapters.messaging import handlers
@@ -20,7 +21,18 @@ ROUTING_KEY_TO_HANDLER = {
 }
 
 
-async def start_consumer(connection: aio_pika.abc.AbstractRobustConnection) -> None:
+@dataclass
+class BillingConsumer:
+    channel: AbstractRobustChannel
+    queue: AbstractQueue
+    consumer_tag: str
+
+    async def stop(self) -> None:
+        await self.queue.cancel(self.consumer_tag)
+        await self.channel.close()
+
+
+async def start_consumer(connection: aio_pika.abc.AbstractRobustConnection) -> BillingConsumer:
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=10)
 
@@ -67,8 +79,9 @@ async def start_consumer(connection: aio_pika.abc.AbstractRobustConnection) -> N
             # nack without requeue → goes to DLQ for manual inspection
             await message.nack(requeue=False)
 
-    await queue.consume(on_message)
+    consumer_tag = await queue.consume(on_message)
     logger.info(
         f"Consumer started — exchange={settings.exchange_name} "
         f"queue={settings.billing_queue}"
     )
+    return BillingConsumer(channel=channel, queue=queue, consumer_tag=consumer_tag)
